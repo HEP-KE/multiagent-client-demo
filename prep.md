@@ -26,7 +26,7 @@ cd ../multiagent-client-demo
 pip install -r requirements.txt
 ```
 
-## 3. Verify CLASS works (the one install that can bite)
+## 3. Verify CLASS works 
 
 ```bash
 python -c "from classy import Class; c = Class(); c.set({'output':'mPk'}); c.compute(); print('CLASS OK')"
