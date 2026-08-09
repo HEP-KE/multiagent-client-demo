@@ -1,0 +1,6 @@
+langgraph
+langchain-openai
+langchain-mcp-adapters
+python-dotenv
+jupyter
+matplotlib

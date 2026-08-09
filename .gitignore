@@ -1,8 +1,10 @@
 __pycache__/
-.env
-tutorial-helper.md
+*.egg-info/
 .venv/
 .ipynb_checkpoints/
+.pytest_cache/
+.env
+tutorial-helper.md
 agent-output/*
 !agent-output/.gitkeep
 .DS_Store
