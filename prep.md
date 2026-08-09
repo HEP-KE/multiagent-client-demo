@@ -19,12 +19,15 @@ conda create -n spectra-tutorial python=3.12 -y
 conda activate spectra-tutorial
 
 cd spectra-mcp-server
-pip install cython numpy        # build helpers for classy
-pip install -e ".[dev]"         # installs classy (CLASS), mcp, matplotlib, ...
+pip install cython numpy
+pip install -e ".[dev]"
 
 cd ../multiagent-client-demo
 pip install -r requirements.txt
 ```
+
+(The first `pip install` provides build helpers for `classy`; the second pulls
+in classy/CLASS, mcp, matplotlib, and the rest.)
 
 ## 3. Verify CLASS works 
 
@@ -63,12 +66,14 @@ If `pip install classy` failed (it compiles C code):
 ## 5. Smoke test (2 commands)
 
 ```bash
-cd spectra-mcp-server && pytest          # 7 passed
+cd spectra-mcp-server && pytest
 cd ../multiagent-client-demo && python -c "
 from dotenv import load_dotenv; load_dotenv()
 from agents import make_llm
 print(make_llm().invoke('Say READY').content)"
 ```
+
+Expected: `7 passed` from pytest, then `READY` from the model.
 
 If both print happily, you're set. See you at the session — we'll start in
 `spectra-mcp-server/notebooks/01_manual_pipeline.ipynb`.
