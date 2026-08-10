@@ -14,7 +14,9 @@ PROVIDERS = {
     "gemini": {
         "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
         "key_env": "GOOGLE_API_KEY",
-        "default_model": "gemini-2.5-flash",
+        # rolling alias: some pinned models (e.g. gemini-2.5-flash) are closed
+        # to new API accounts and 404 for them
+        "default_model": "gemini-flash-latest",
         "key_url": "https://aistudio.google.com/apikey",
     },
     "groq": {
