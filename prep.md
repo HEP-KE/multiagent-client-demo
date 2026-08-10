@@ -1,6 +1,6 @@
-# Pre-session setup (10 minutes, please do this BEFORE the tutorial)
+# Pre-session setup (takes ~10 minutes, please do this before the tutorial)
 
-The tutorial will involve going over 2 repos. One python environment will serve both.  
+The tutorial will involve 2 repos. One python environment will serve both. We also require access to LLM tokens. 
 
 ## 1. Clone both repos side by side
 
