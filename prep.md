@@ -1,7 +1,6 @@
 # Pre-session setup (10 minutes, please do this BEFORE the tutorial)
 
-One environment serves both repos. If anything fails, the fallback notes are
-at the bottom — and please ask before the session, not during.
+The tutorial will involve going over 2 repos. One python environment will serve both.  
 
 ## 1. Clone both repos side by side
 
@@ -12,7 +11,7 @@ git clone https://github.com/HEP-KE/multiagent-client-demo.git
 
 (The client notebook assumes `../spectra-mcp-server` exists.)
 
-## 2. Create the environment
+## 2. Create the conda environment
 
 ```bash
 conda create -n spectra-tutorial python=3.12 -y
@@ -26,8 +25,7 @@ cd ../multiagent-client-demo
 pip install -r requirements.txt
 ```
 
-(The first `pip install` provides build helpers for `classy`; the second pulls
-in classy/CLASS, mcp, matplotlib, and the rest.)
+(The first `pip install` provides build helpers for `classy`; the second pulls in classy/CLASS, mcp, and the rest of the necessary packages.)
 
 ## 3. Verify CLASS works 
 
@@ -42,28 +40,30 @@ If `pip install classy` failed (it compiles C code):
 
 ## 4. Get a free Gemini API key
 
-1. Go to <https://aistudio.google.com/apikey> (any Google account).
-2. **Create API key** → copy it.
-3. In `multiagent-client-demo/`, create your `.env`:
+1. Go to <https://aistudio.google.com/apikey> (login using your Google/gmail account). Make sure there are no credit cards on file (see notes below). 
+2. **Create API key** → copy and save this code somewhere private. 
+3. In `multiagent-client-demo/`, create your `.env`. We have provided `.env.example` that you can copy:
 
    ```bash
    cp .env.example .env
    # edit .env:  GOOGLE_API_KEY=AIza...
    ```
 
-> **Budget warning**: as of mid-2026 the Gemini free tier allows only ~20
-> requests per day. One full agent run uses ~10 of them — so your key is good
-> for roughly **one run per day**. Run the smoke test below when you set up,
-> then LEAVE THE KEY ALONE until the session. (Quota resets at midnight
-> Pacific.) The `.env` file is gitignored — never commit keys.
+> **Budget warning**: as of mid-2026 the Gemini free tier allows ~20 requests per day. In a typical API plan, once the free quota is exhausted, you start paying per-token. To avoid this charge, simple do not have any credit card linked for payment.
 
-**Optional but recommended backup**: also grab a free Groq key at
+> One full agent run in the tutorial uses ~10 requests — so your key is good for roughly **1-2 run per day**. Run the test below when you set up, then leave the Key alone until the session. (Quota resets at midnight Pacific.) 
+
+> The `.env` file is gitignored — never commit keys.
+
+**Recommended backup**: also grab a free Groq key at
 <https://console.groq.com/keys> (email signup, no credit card) and add it to
 `.env` as `GROQ_API_KEY=...`. Groq serves open-weight US models
 (gpt-oss-120b) at ~14,400 requests/day; in the notebook it's just
-`make_llm("groq")` instead of `make_llm()`.
+`make_llm("groq")` instead of `make_llm()`. 
 
-## 5. Smoke test (2 commands)
+If your university/lab/collaboration provides tokens, then those can be included too. 
+
+## 5. Testing the setup
 
 ```bash
 cd spectra-mcp-server && pytest
@@ -75,5 +75,4 @@ print(make_llm().invoke('Say READY').content)"
 
 Expected: `7 passed` from pytest, then `READY` from the model.
 
-If both print happily, you're set. See you at the session — we'll start in
-`spectra-mcp-server/notebooks/01_manual_pipeline.ipynb`.
+If both print, you're set. 
