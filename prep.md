@@ -75,4 +75,4 @@ print(make_llm().invoke('Say READY').content)"
 
 Expected: `7 passed` from pytest, then `READY` from the model.
 
-If both print, you're set. 
+If both print, you're set. If things don't work, please raise an issue on github. 
