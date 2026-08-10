@@ -2,7 +2,7 @@
 
 The lead is visited twice: at the start it breaks the task into a plan, and
 after the worker has finished every step it writes the final report. The
-worker executes one step at a time by calling MCP tools. (Think PI and grad
+worker executes one step at a time by calling MCP tools. (Think supervisor and grad
 student.)
 
 All model calls go through _ainvoke, which waits out HTTP 429 responses:
