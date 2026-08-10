@@ -38,7 +38,7 @@ If `pip install classy` failed (it compiles C code):
 - macOS: `xcode-select --install`, then retry `pip install classy`
 - any platform: `conda install -c conda-forge classy`
 
-## 4. Get a free Gemini API key
+## 4. Get a free API key from Gemini and Groq
 
 1. Go to <https://aistudio.google.com/apikey> (login using your Google/gmail account). Make sure there are no credit cards on file (see notes below). 
 2. **Create API key** → copy and save this code somewhere private. 
