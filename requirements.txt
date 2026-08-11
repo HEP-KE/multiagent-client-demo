@@ -1,5 +1,5 @@
 langgraph
-langchain-openai
+langchain-openai>=1.0
 langchain-mcp-adapters
 python-dotenv
 jupyter

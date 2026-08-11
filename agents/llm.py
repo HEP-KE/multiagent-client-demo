@@ -10,6 +10,30 @@ import os
 
 from langchain_openai import ChatOpenAI
 
+# Gemini 3 models reject replayed tool calls that lack a "thought signature"
+# (HTTP 400). The real signature is dropped by the OpenAI-compat round trip,
+# but Google documents a dummy value that skips validation for exactly this
+# case: https://ai.google.dev/gemini-api/docs/thinking#signatures
+_DUMMY_THOUGHT_SIGNATURE = "context_engineering_is_the_way_to_go"
+
+
+class _GeminiChat(ChatOpenAI):
+    """ChatOpenAI that stamps the documented dummy thought signature onto
+    every replayed assistant tool call, so multi-turn tool use works against
+    Gemini 3 models through the OpenAI-compatible endpoint."""
+
+    def _get_request_payload(self, input_, *, stop=None, **kwargs):
+        payload = super()._get_request_payload(input_, stop=stop, **kwargs)
+        for message in payload.get("messages", []):
+            if message.get("role") == "assistant":
+                for tool_call in message.get("tool_calls") or []:
+                    tool_call.setdefault(
+                        "extra_content",
+                        {"google": {"thought_signature": _DUMMY_THOUGHT_SIGNATURE}},
+                    )
+        return payload
+
+
 PROVIDERS = {
     "gemini": {
         "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
@@ -38,7 +62,8 @@ def make_llm(provider: str = "gemini", model: str | None = None,
             "and put it in a .env file (see .env.example), then call "
             "load_dotenv() before make_llm()."
         )
-    return ChatOpenAI(
+    chat_class = _GeminiChat if provider == "gemini" else ChatOpenAI
+    return chat_class(
         model=model or cfg["default_model"],
         base_url=cfg["base_url"],
         api_key=api_key,
