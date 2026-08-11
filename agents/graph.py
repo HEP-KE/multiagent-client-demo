@@ -40,10 +40,18 @@ def route_from_worker(state: AgentState) -> str:
     return "lead"
 
 
-def build_graph(llm, tools):
-    tools = list(tools) + [load_skill, remember]  # client-side tools ride along
+def build_graph(llm, tools, extras: bool = False):
+    """Compile the lead/worker graph.
+
+    extras=True additionally enables skills and memory: the load_skill and
+    remember tools ride along with the MCP tools, the skill index appears in
+    the lead's planning prompt, and MEMORY.md is read at planning time.
+    Notebook 02 runs without extras; notebook 03 turns them on.
+    """
+    if extras:
+        tools = list(tools) + [load_skill, remember]
     graph = StateGraph(AgentState)
-    graph.add_node("lead", make_lead(llm, tools))
+    graph.add_node("lead", make_lead(llm, tools, extras=extras))
     graph.add_node("worker", make_worker(llm, tools))
 
     graph.add_edge(START, "lead")

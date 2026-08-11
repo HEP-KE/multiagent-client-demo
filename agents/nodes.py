@@ -49,27 +49,32 @@ def _parse_json_list(text: str) -> list:
     return json.loads(text)
 
 
-def make_lead(llm, tools):
+def make_lead(llm, tools, extras: bool = False):
+    skills_section = (
+        f"Known skills (the worker can load one with load_skill):\n{skill_index()}\n\n"
+        if extras
+        else ""
+    )
     plan_prompt = (
         "You are the lead of a small multi-agent science system.\n"
         "Break the user's task into 2-5 sequential steps. Each step must be\n"
         "achievable with the tools below, and later steps may use files created\n"
         "by earlier ones.\n\n"
         f"Available tools:\n{_tool_catalog(tools)}\n\n"
-        f"Known skills (the worker can load one with load_skill):\n{skill_index()}\n\n"
-        'Reply with ONLY a JSON array like [{"id": 1, "description": "..."}].'
+        + skills_section
+        + 'Reply with ONLY a JSON array like [{"id": 1, "description": "..."}].'
     )
 
     async def lead(state):
         if not state["plan"]:
             # First visit: write the plan. Memory and any previous-run context
             # are read fresh each run.
-            extras = ""
-            if memory := read_memory():
-                extras += f"\n\nLessons from earlier runs:\n{memory}"
+            context = ""
+            if extras and (memory := read_memory()):
+                context += f"\n\nLessons from earlier runs:\n{memory}"
             if state["history"]:
-                extras += "\n\nContext from previous runs (follow-up):\n" + "\n\n".join(state["history"])
-            messages = [SystemMessage(plan_prompt + extras), HumanMessage(state["task"])]
+                context += "\n\nContext from previous runs (follow-up):\n" + "\n\n".join(state["history"])
+            messages = [SystemMessage(plan_prompt + context), HumanMessage(state["task"])]
             reply = await _ainvoke(llm, messages)
             try:
                 plan = _parse_json_list(reply.content)

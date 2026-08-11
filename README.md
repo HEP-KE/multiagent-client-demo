@@ -60,6 +60,9 @@ terminal 1 needed) — the config style production MCP clients use.
 
 ## Extras (implemented, covered in notebook 03)
 
+Skills and memory are opt-in: `build_graph(llm, tools, extras=True)`.
+Notebook 02 runs without them; notebook 03 turns them on.
+
 - **Skills**: drop a `skills/my-workflow.md` (frontmatter `name:`/`description:`)
   and the lead sees it at planning time; the worker loads the full recipe on
   demand with the `load_skill` tool — tools are *verbs*, skills are *recipes*.
