@@ -8,7 +8,11 @@ plans, calls its tools, and reproduces a matter-power-spectrum figure from a sin
 Setup for both repos: [`prep.md`](prep.md). Then open
 **`notebooks/02_demo_client.ipynb`** — the tutorial is driven from there.
 `notebooks/03_next_steps.ipynb` covers the extras (skills, memory, follow-up
-queries, switching LLM backends) that are not covered in this tutorial. 
+queries, switching LLM backends) that are not covered in this tutorial.
+`notebooks/04_gaia_demo.ipynb` points the same client — unchanged — at a
+second server, [`gaia-mcp-server`](https://github.com/HEP-KE/gaia-mcp-server),
+and reproduces the Gaia DR2 Hertzsprung–Russell diagram of the solar
+neighbourhood (mini-project 1).
 
 ## Architecture
 
