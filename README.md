@@ -13,6 +13,10 @@ queries, switching LLM backends) that are not covered in this tutorial.
 second server, [`gaia-mcp-server`](https://github.com/HEP-KE/gaia-mcp-server),
 and reproduces the Gaia DR2 Hertzsprung–Russell diagram of the solar
 neighbourhood (mini-project 1).
+`notebooks/05_multi_server.ipynb` connects to **both servers at once** and
+gives the agent a task spanning cosmology and stellar astrophysics. (The
+servers also plug into Claude Code, the Claude desktop app, Codex, or
+Cursor — see `docs/mcp-clients.md` in either server repo.)
 
 ## Architecture
 
