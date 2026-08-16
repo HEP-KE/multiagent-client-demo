@@ -5,6 +5,7 @@ __pycache__/
 .pytest_cache/
 .env
 tutorial-helper.md
+hosting-notes.md
 agent-output/*
 !agent-output/.gitkeep
 .DS_Store
