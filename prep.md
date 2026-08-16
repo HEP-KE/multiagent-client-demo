@@ -99,9 +99,7 @@ almost always the cause.
 **ChatGPT app**: Settings → Connectors (requires developer mode; available
 on paid plans) → add the same URLs.
 
-**Sample question** — paste it whole; the last two lines matter, because
-the figures are written on the *server's* disk and that path convention is
-how you get to see them:
+**Sample question** — paste it whole:
 
 > First list the tools available from the spectra and gaia servers. Then:
 > using the spectra tools, compute the z=0 matter power spectrum for
@@ -111,10 +109,8 @@ how you get to see them:
 > quality filters, and draw the density HRD. Report the neutrino
 > suppression near k = 1 h/Mpc and the filtered star count vs the published
 > 212,728.
-> Save all files with output_dir "/srv/artifacts/YOURNAME" — do not use any
-> other directory, and do not try to recompute things locally.
 
-Then open `https://files.77-42-88-84.sslip.io/YOURNAME/` in a browser —
-your figures are there. (Shared demo box: be gentle, don't put anything
-private in the prompt outputs, and expect it to be offline outside tutorial
-periods.)
+Every figure comes back as a link — the server stores everything it makes
+at <https://files.77-42-88-84.sslip.io/>, whatever directory the model asks
+for. (Shared demo box: be gentle, don't put anything private in the prompt,
+and expect it to be offline outside tutorial periods.)
