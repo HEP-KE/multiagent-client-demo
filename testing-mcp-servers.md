@@ -36,10 +36,18 @@ identically (same steps, their URL instead).
 
 ## ChatGPT app
 
-1. Settings → **Connectors** → enable **Developer mode** (requires a paid
-   plan)
-2. **Add connector** → same name + URL as above
-3. In a new chat, enable the connector under the tools/plus menu.
+(As of Aug 2026; the desktop app moves this around between versions — look
+for wherever plugins/MCPs are managed.)
+
+1. Settings → **Plugins** (left sidebar, under *Integrations*)
+2. Top-right **Add ▾** → **Add MCP server**
+3. In "Connect to a custom MCP":
+   - Name: `cosmic`
+   - Type: **Streamable HTTP**
+   - URL: `https://cosmic.77-42-88-84.sslip.io/mcp`
+   - Leave bearer token and headers empty (the demo server is open)
+4. The server appears under the **MCPs** tab → *Servers* — flip its toggle
+   on, then use it from a new chat.
 
 ## Claude Code (terminal)
 
