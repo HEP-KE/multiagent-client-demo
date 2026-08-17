@@ -77,40 +77,12 @@ Expected: `7 passed` from pytest, then `READY` from the model.
 
 If both print, you're set. If things don't work, please raise an issue on github. 
 
-## 6. Optional: try the hosted servers from a GUI app
+## 6. Optional: try the hosted servers from an AI app
 
-Both tutorial servers also run on a public demo host — you can talk to them
-from the Claude desktop app (or ChatGPT) **before the session, with nothing
+The tutorial servers (plus a larger production cosmology server) run on a
+public demo host — you can talk to them from Claude desktop, ChatGPT,
+Claude Code, Codex, or Cursor **before the session, with nothing
 installed**, and get a feel for what the tutorial builds.
 
-**Claude desktop app**: Settings → **Connectors** → **Add custom
-connector**, twice:
-
-| name | URL |
-|---|---|
-| `spectra` | `https://spectra.77-42-88-84.sslip.io/mcp` |
-| `gaia` | `https://gaia.77-42-88-84.sslip.io/mcp` |
-
-Then start a **new** chat and check both connectors are enabled in the
-tools menu (the sliders icon). Connectors added mid-chat don't show up
-until a fresh chat — if the model claims a server has no tools, that's
-almost always the cause.
-
-**ChatGPT app**: Settings → Connectors (requires developer mode; available
-on paid plans) → add the same URLs.
-
-**Sample question** — paste it whole:
-
-> First list the tools available from the spectra and gaia servers. Then:
-> using the spectra tools, compute the z=0 matter power spectrum for
-> standard LCDM and for total neutrino mass 0.15 eV, and plot both against
-> the eBOSS data with LCDM as the ratio reference. Using the gaia tools,
-> fetch the 100 pc sample with source="bundled", apply the published
-> quality filters, and draw the density HRD. Report the neutrino
-> suppression near k = 1 h/Mpc and the filtered star count vs the published
-> 212,728.
-
-Every figure comes back as a link — the server stores everything it makes
-at <https://files.77-42-88-84.sslip.io/>, whatever directory the model asks
-for. (Shared demo box: be gentle, don't put anything private in the prompt,
-and expect it to be offline outside tutorial periods.)
+Setup instructions per app, server URLs, and sample questions:
+**[testing-mcp-servers.md](testing-mcp-servers.md)**
