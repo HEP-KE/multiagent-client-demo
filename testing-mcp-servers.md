@@ -1,11 +1,11 @@
 # Testing the hosted MCP servers from your favorite app
 
-Three MCP servers run on our public demo host — you can talk to them from
-several AI apps **with nothing installed**, before or after the tutorial.
+Three MCP servers run on a server — you can talk to them from
+several AI apps **without installing anything**. 
 
 | server | URL | what it does |
 |---|---|---|
-| **cosmic** | `https://cosmic.77-42-88-84.sslip.io/mcp` | ~20 cosmological emulators: P(k), modified gravity, CMB, lensing, baryons, halo mass function, Lyman-alpha ([repo](https://github.com/HEP-KE/cosmic_emulator_server)) |
+| **cosmic** | `https://cosmic.77-42-88-84.sslip.io/mcp` | ~20 cosmological emulators: P(k), modified gravity, CMB, lensing, halo mass function, baryonic effects, Lyman-alpha ([repo](https://github.com/HEP-KE/cosmic_emulator_server)) |
 | spectra | `https://spectra.77-42-88-84.sslip.io/mcp` | CLASS power spectra vs eBOSS data ([repo](https://github.com/HEP-KE/spectra-mcp-server)) |
 | gaia | `https://gaia.77-42-88-84.sslip.io/mcp` | Gaia DR2 colour-magnitude diagrams ([repo](https://github.com/HEP-KE/gaia-mcp-server)) |
 
@@ -15,12 +15,9 @@ everything at <https://files.77-42-88-84.sslip.io/>.
 The instructions below use **cosmic** as the example; spectra and gaia work
 identically (same steps, their URL instead).
 
-> **Shared demo box**: be gentle, don't put anything private in prompts,
-> and expect it to be offline outside tutorial periods.
 >
-> **If the URL won't load at all**: some institutional networks (e.g.
-> national labs) block `*.sslip.io` domains at the DNS level. Try from a
-> home network or phone hotspot — the server is fine.
+> **If the URL won't load at all**: some institutional networks block `*.sslip.io` domains at the DNS level. Try from a
+> home network or phone hotspot. 
 
 ---
 
@@ -31,13 +28,9 @@ identically (same steps, their URL instead).
 3. Start a **new** chat and check the connector is enabled in the tools
    menu (the sliders icon).
 
-> Connectors added mid-chat don't show up until a fresh chat — if the model
-> claims the server has no tools, that's almost always the cause.
 
 ## ChatGPT app
 
-(As of Aug 2026; the desktop app moves this around between versions — look
-for wherever plugins/MCPs are managed.)
 
 1. Settings → **Plugins** (left sidebar, under *Integrations*)
 2. Top-right **Add ▾** → **Add MCP server**
@@ -48,6 +41,9 @@ for wherever plugins/MCPs are managed.)
    - Leave bearer token and headers empty (the demo server is open)
 4. The server appears under the **MCPs** tab → *Servers* — flip its toggle
    on, then use it from a new chat.
+
+(As of Aug 2026; the desktop app moves this around between versions — look
+for wherever plugins/MCPs are managed.)
 
 ## Claude Code (terminal)
 
@@ -95,24 +91,40 @@ async with streamablehttp_client("https://cosmic.77-42-88-84.sslip.io/mcp") as (
 
 ---
 
-## Things to try (paste whole)
+## Example queries to try 
 
-**Warm-up — discovery:**
+**Query-1: exploration**
 
 > List the emulators and skills available from the cosmic server. Which
-> families are covered, and which emulators are active vs deferred?
+> emulators are covered, and what are the inputs and outputs?
 
-**The flagship — cross-emulator check:**
+**Query-2: Matter power spectra**
 
-> Load the pk-crosscheck skill from the cosmic server and follow it: run
-> all six nonlinear P(k) backends at Om=0.31, sigma8=0.82, z=0, plot the
-> comparison, and tell me the k-range where they agree within 2%.
+> Run all available nonlinear P(k) backends at Om=0.31, sigma8=0.82, z=0, plot the comparison, and tell me the k-range where they agree within 2%. Overlay the plot with linear matter power spectra. 
 
-**Modified gravity:**
+**Query-3: Combining tools**
 
-> Using the cosmic server, compute the cubic Galileon boost at f_phi=0.8
-> and the f(R) boost at |fR0|=1e-5, both at z=0, plot them together, and
-> report where each peaks. Include the Galileon GP uncertainty.
+> At what scales could baryonic feedback have effects on modified-gravity
+> signals? At z=0, compute the f(R) boost at |fR0|=1e-5 and the baryonic
+> suppression for both SP(k) and IllustrisTNG feedback, all on the same
+> k-grid, and plot the three curves together. Identify the k-range where
+> the gravity enhancement dominates, where feedback suppression dominates,
+> and where they roughly cancel. Then build the full combined spectrum —
+> compute_mg_pk for the f(R) universe, then baryonify_pk on that file —
+> and compare it against plain LCDM. 
+
+**Query-4: Further exploration**
+
+> Beyond the power spectrum: take one non-standard cosmology (Om=0.31, sigma8=0.82,
+> h=0.67, ns=0.965 and (a) compute the halo mass function at z=0
+> and z=1 and report how much the abundance of 1e14 and 1e15 Msun/h
+> clusters drops between the two, with the emulator uncertainty; (b)
+> compute the CMB TT spectrum and report the position and height of the
+> first acoustic peak; (c) compute the weak-lensing convergence spectrum
+> for sources at z~1 and report the multipole where it peaks; (d) emulate
+> the Lyman-alpha 1D flux power at the default IGM parameters and note its
+> units. One short paragraph on how these four observables probe the same
+> universe at different epochs and scales.
 
 **If your app can't open the result links** (some restrict which hosts
 they may fetch): add "use return_data=true" to the request — every compute
