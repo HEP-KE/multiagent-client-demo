@@ -85,4 +85,4 @@ Claude Code, Codex, or Cursor **before the session, with nothing
 installed**, and get a feel for what the tutorial builds.
 
 Setup instructions per app, server URLs, and sample questions:
-**[testing-mcp-servers.md](testing-mcp-servers.md)**
+**[link_servers.md](link_servers.md)**
