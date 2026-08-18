@@ -33,7 +33,7 @@ identically (same steps, their URL instead).
 
 
 1. Settings → **Plugins** (left sidebar, under *Integrations*)
-2. Click on **Manage** icon (right side, beside Installed plugins, under the search bar)
+2. Click on **⛭** (or Manage) icon (right side, beside Installed plugins, under the search bar)
 3. Top-right **Add ▾** → **Add MCP server**
 4. In "Connect to a custom MCP":
    - Name: `cosmic`
