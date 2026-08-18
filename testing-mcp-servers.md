@@ -33,13 +33,14 @@ identically (same steps, their URL instead).
 
 
 1. Settings → **Plugins** (left sidebar, under *Integrations*)
-2. Top-right **Add ▾** → **Add MCP server**
-3. In "Connect to a custom MCP":
+2. Click on **Manage** icon (right side, beside Installed plugins, under the search bar)
+3. Top-right **Add ▾** → **Add MCP server**
+4. In "Connect to a custom MCP":
    - Name: `cosmic`
    - Type: **Streamable HTTP**
    - URL: `https://cosmic.77-42-88-84.sslip.io/mcp`
    - Leave bearer token and headers empty (the demo server is open)
-4. The server appears under the **MCPs** tab → *Servers* — flip its toggle
+5. The server appears under the **MCPs** tab → *Servers* — flip its toggle
    on, then use it from a new chat.
 
 (As of Aug 2026; the desktop app moves this around between versions — look
