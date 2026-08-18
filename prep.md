@@ -77,11 +77,11 @@ Expected: `7 passed` from pytest, then `READY` from the model.
 
 If both print, you're set. If things don't work, please raise an issue on github. 
 
-## 6. Optional: try the hosted servers from an AI app
+## 6. Optional (but highly recommended): try the hosted servers from an AI app
 
 The tutorial servers (plus a larger production cosmology server) run on a
 public demo host — you can talk to them from Claude desktop, ChatGPT,
-Claude Code, Codex, or Cursor **before the session, with nothing
+Claude Code, Codex, or Cursor **with nothing
 installed**, and get a feel for what the tutorial builds.
 
 Setup instructions per app, server URLs, and sample questions:
