@@ -1,4 +1,4 @@
-# Testing the hosted MCP servers from your favorite app
+# Testing the hosted MCP servers from your AI app
 
 Three MCP servers run on a server — you can talk to them from
 several AI apps **without installing anything**. 
