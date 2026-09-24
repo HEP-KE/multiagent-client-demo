@@ -15,7 +15,7 @@ group: Introduction
 layout: cover
 eyebrow: Hands-on tutorial · two Python repos
 lede: A LangGraph multi-agent client talks to a cosmology MCP server, plans the analysis, calls the tools, and reproduces a matter power spectrum figure from a single query.
-byline: Nesar Ramachandra
+byline: HEP-Knowledge Extraction
 +++
 
 ::: grid
@@ -40,13 +40,13 @@ LangGraph client, ~250 lines: two LLM roles (lead + worker).
 
 +++
 id: why
-title: Why agentic systems for science?
+title: Why do we need agentic systems for science?
 group: Introduction
 kicker: Motivation
 +++
 
 ::: split even
-### Custom agentic systems vs commercial LLM interfaces
+### Agentic systems vs LLM calls
 
 Limitations in LLMs can be overcome with agentic systems.
 
