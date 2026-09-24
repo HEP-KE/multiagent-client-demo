@@ -1,0 +1,1229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Building Scientific Agents</title>
+<meta name="description" content="Hands-on tutorial: a LangGraph multi-agent client talking to a CLASS cosmology MCP server. Setup, server, client, and extras.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Ccircle cx='16.5' cy='7.5' r='3.4' fill='%23a96b0e'/%3E%3Cpath d='M14 10.5 3.5 20.5M15.5 12.5 8 19.5M12.5 9.5 6 14.5' stroke='%23a96b0e' stroke-width='1.4' stroke-linecap='round' opacity='.65'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=STIX+Two+Text:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+/* "Fog and brass" tokens, shared with hep-genesis-releases. */
+:root {
+  --bg0: #e1dfd8;
+  --bg1: #eae8e1;
+  --bg2: #f2f0ea;
+  --bg3: #d3d0c7;
+  --line: #c2bfb5;
+  --line-soft: #d2cfc6;
+  --text: #26292e;
+  --text-dim: #5d6570;
+  --text-faint: #8b919b;
+  --accent: #a96b0e;
+  --accent-soft: rgba(169, 107, 14, 0.12);
+  --accent-text: #8a5709;
+  --ok: #1e8a5c;
+  --warn: #b4441c;
+  --paper: #fdfcf9;
+  --code-bg: #2a2c30;
+  --code-ink: #e6e3da;
+  --shadow: 0 1px 2px rgba(38, 41, 46, .06), 0 4px 14px rgba(38, 41, 46, .05);
+  --shadow-lg: 0 2px 4px rgba(38, 41, 46, .05), 0 18px 48px rgba(38, 41, 46, .12);
+  --font-ui: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --font-serif: 'STIX Two Text', 'Times New Roman', Georgia, serif;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --side: 272px;
+  --top: 56px;
+  color-scheme: light;
+}
+* { box-sizing: border-box; margin: 0; }
+html { scroll-padding-top: calc(var(--top) + 16px); }
+body {
+  font-family: var(--font-ui); font-size: 15.5px; line-height: 1.6;
+  color: var(--text); background: var(--bg0);
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent-text); text-decoration: none; }
+a:hover { text-decoration: underline; text-underline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+code, pre, kbd { font-family: var(--font-mono); }
+p code, li code, td code, h3 code, .sub code {
+  font-size: .86em; background: var(--bg2); border: 1px solid var(--line-soft);
+  padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere;
+}
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+@media (prefers-reduced-motion: reduce) { * { transition-duration: .001s !important; animation: none !important; } }
+
+/* ---------------------------------------------------------------- top bar */
+.topbar {
+  position: sticky; top: 0; z-index: 20; height: var(--top);
+  background: rgba(225, 223, 216, .86);
+  backdrop-filter: saturate(1.4) blur(10px); -webkit-backdrop-filter: saturate(1.4) blur(10px);
+  border-bottom: 1px solid var(--line-soft);
+  display: flex; align-items: center; gap: 16px; padding-inline: 20px;
+}
+.brand { display: flex; align-items: center; gap: 10px; color: var(--text); font-weight: 600; letter-spacing: -.005em; white-space: nowrap; }
+.brand:hover { text-decoration: none; }
+.brand svg { width: 24px; height: 24px; flex-shrink: 0; }
+.brand .sep { color: var(--text-faint); font-weight: 400; }
+.brand .sub-b { color: var(--text-dim); font-weight: 400; }
+.top-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.counter { font-family: var(--font-mono); font-size: 12.5px; color: var(--text-faint); margin-right: 6px; white-space: nowrap; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; padding: 2px; background: var(--bg1); }
+.seg button {
+  font: 500 13px var(--font-ui); color: var(--text-dim); background: none; border: 0;
+  padding: 5px 11px; border-radius: 6px; cursor: pointer;
+}
+.seg button[aria-pressed="true"] { background: var(--text); color: var(--bg2); }
+.icon-btn {
+  display: none; font: 500 13px var(--font-ui); color: var(--text); background: var(--bg1);
+  border: 1px solid var(--line); border-radius: 8px; padding: 6px 11px; cursor: pointer;
+}
+.gh { color: var(--text-dim); display: grid; place-items: center; width: 32px; height: 32px; border-radius: 8px; }
+.gh:hover { background: var(--bg3); color: var(--text); }
+.gh svg { width: 18px; height: 18px; }
+.progress { position: absolute; left: 0; bottom: -1px; height: 2px; background: var(--accent); transition: width .25s ease; }
+body.all .progress { display: none; }
+
+/* ---------------------------------------------------------------- layout */
+.layout { display: grid; grid-template-columns: var(--side) minmax(0, 1fr); min-height: calc(100vh - var(--top)); }
+.side {
+  position: sticky; top: var(--top); height: calc(100vh - var(--top)); overflow-y: auto;
+  border-right: 1px solid var(--line-soft); padding: 22px 14px 40px;
+}
+.side .grp { font-family: var(--font-mono); font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: var(--text-faint); margin: 18px 10px 6px; }
+.side .grp:first-child { margin-top: 0; }
+.side a {
+  display: grid; grid-template-columns: 26px 1fr; gap: 4px; align-items: baseline;
+  color: var(--text-dim); font-size: 13.5px; line-height: 1.4; padding: 6px 10px; border-radius: var(--radius-sm);
+}
+.side a .n { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); }
+.side a:hover { background: var(--bg3); color: var(--text); text-decoration: none; }
+.side a[aria-current="true"] { background: var(--accent-soft); color: var(--accent-text); font-weight: 500; }
+.side a[aria-current="true"] .n { color: var(--accent-text); }
+
+main { min-width: 0; }
+.page { max-width: 1040px; margin: 0 auto; padding: 56px 48px 40px; }
+body.paged .page:not(.on) { display: none; }
+body.paged .page.on { animation: fade .28s ease; }
+@keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+body.all .page { border-bottom: 1px solid var(--line-soft); padding-bottom: 64px; }
+body.all .pager { display: none; }
+
+/* ---------------------------------------------------------------- type */
+.kicker { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; color: var(--accent-text); text-transform: uppercase; }
+h1 {
+  font-family: var(--font-serif); font-weight: 500; font-size: clamp(36px, 5.4vw, 58px);
+  line-height: 1.06; letter-spacing: -.012em; margin: 20px 0 18px; max-width: 18em;
+}
+h1 em, h2 em { font-style: italic; color: var(--accent-text); }
+h2 {
+  font-family: var(--font-serif); font-weight: 500; font-size: clamp(26px, 3.4vw, 36px);
+  line-height: 1.15; letter-spacing: -.01em; margin: 10px 0 14px;
+}
+h3 { font-size: 15.5px; font-weight: 600; margin-bottom: 6px; letter-spacing: -.003em; }
+.sub { color: var(--text-dim); max-width: 66ch; font-size: 16.5px; }
+.head { margin-bottom: 32px; }
+.lede { font-size: 18px; color: var(--text-dim); max-width: 60ch; }
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 12px; letter-spacing: .04em;
+  color: var(--text-dim); border: 1px solid var(--line); background: var(--bg1); padding: 4px 10px; border-radius: 999px;
+}
+.eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+.meta-line { font-size: 13px; color: var(--text-faint); margin-top: 14px; font-family: var(--font-mono); }
+
+/* ---------------------------------------------------------------- blocks */
+.grid { display: grid; gap: 16px; }
+.g2 { grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr)); }
+.g3 { grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr)); }
+.split { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+@media (max-width: 1100px) { .split { grid-template-columns: 1fr; } }
+.grid > *, .split > * { min-width: 0; }
+.brand-t { overflow: hidden; text-overflow: ellipsis; }
+.card { background: var(--bg1); border: 1px solid var(--line-soft); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); }
+.card p, .card li { color: var(--text-dim); font-size: 14.5px; }
+.card .ic { width: 34px; height: 34px; border-radius: 8px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-text); margin-bottom: 14px; }
+.card .ic svg { width: 18px; height: 18px; }
+.card .tag { float: right; }
+.tag { font-family: var(--font-mono); font-size: 11px; padding: 2px 7px; border-radius: 5px; border: 1px solid var(--line); color: var(--text-dim); white-space: nowrap; }
+.tag.ok { color: var(--ok); border-color: rgba(30,138,92,.35); background: rgba(30,138,92,.07); }
+.tag.acc { color: var(--accent-text); border-color: rgba(169,107,14,.35); background: var(--accent-soft); }
+
+ul.pts { list-style: none; padding: 0; display: grid; gap: 9px; }
+ul.pts li { position: relative; padding-left: 18px; color: var(--text-dim); font-size: 15px; }
+ul.pts li::before { content: ''; position: absolute; left: 2px; top: .62em; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); opacity: .75; }
+ul.pts li strong { color: var(--text); font-weight: 600; }
+ul.pts ul.pts { margin-top: 8px; }
+.aside h3 { font-size: 13px; font-family: var(--font-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--accent-text); font-weight: 500; margin: 0 0 10px; }
+.aside h3:not(:first-child) { margin-top: 26px; }
+.aside .em { font-style: italic; color: var(--text-faint); font-size: 14px; margin-top: 10px; }
+
+.note {
+  margin-top: 16px; display: flex; gap: 14px; align-items: flex-start;
+  background: var(--paper); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm); padding: 14px 18px; font-size: 14.5px; color: var(--text-dim);
+}
+.note.warn { border-left-color: var(--warn); }
+.note strong { color: var(--text); font-weight: 600; }
+.note > div { min-width: 0; flex: 1; }
+.note svg { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; color: var(--accent-text); }
+.note.warn svg { color: var(--warn); }
+
+/* ---------------------------------------------------------------- code */
+.code { position: relative; margin-top: 12px; background: var(--code-bg); color: var(--code-ink); border-radius: var(--radius-sm); font-size: 13px; line-height: 1.65; box-shadow: var(--shadow); }
+.code .fn {
+  display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-bottom: 1px solid rgba(255,255,255,.08);
+  font: 500 12px var(--font-mono); color: #bdb9ae;
+}
+.code .fn a { color: #d9a24a; }
+.code .fn .dotc { width: 7px; height: 7px; border-radius: 50%; background: #d9a24a; opacity: .8; }
+.code pre { padding: 14px 16px; overflow-x: auto; }
+.code .c { color: #8f959e; }
+.code .p { color: #d9a24a; user-select: none; }
+.code .s { color: #b7c78f; }
+.code .k { color: #e0a86b; }
+.code .d { color: #9cb8d6; }
+.copy {
+  position: absolute; top: 6px; right: 8px; font: 500 11px var(--font-ui); color: #bdb9ae; background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12); border-radius: 5px; padding: 3px 8px; cursor: pointer; opacity: 0; transition: opacity .15s;
+}
+.code:hover .copy, .copy:focus-visible { opacity: 1; }
+@media (hover: none) { .copy { opacity: 1; } }
+
+.query { margin-top: 28px; background: var(--paper); border: 1px solid var(--line-soft); border-radius: var(--radius); padding: 22px 24px; box-shadow: var(--shadow); }
+.query .kicker { margin-bottom: 10px; }
+.query pre { font-size: 13.5px; line-height: 1.7; white-space: pre-wrap; color: var(--text); }
+.query .var { color: var(--accent-text); }
+
+/* ---------------------------------------------------------------- steps */
+.steps { display: grid; gap: 0; }
+.step { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 16px; padding: 22px 0; border-bottom: 1px solid var(--line-soft); }
+.step:first-child { padding-top: 0; }
+.step:last-child { border-bottom: 0; }
+.step .num {
+  width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line); background: var(--bg2);
+  display: grid; place-items: center; font-family: var(--font-mono); font-size: 13px; color: var(--accent-text);
+}
+.step p, .step li { color: var(--text-dim); font-size: 14.5px; }
+.step p + p { margin-top: 8px; }
+
+/* ---------------------------------------------------------------- tables */
+.tbl-wrap { overflow-x: auto; background: var(--bg1); border: 1px solid var(--line-soft); border-radius: var(--radius); box-shadow: var(--shadow); }
+table.t { width: 100%; border-collapse: collapse; font-size: 14px; }
+table.t th, table.t td { text-align: left; padding: 11px 16px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+table.t tr:last-child td { border-bottom: 0; }
+table.t th { font-size: 11.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--text-faint); font-weight: 500; background: var(--bg2); }
+table.t td:first-child { font-family: var(--font-mono); font-size: 12.5px; white-space: nowrap; color: var(--text); }
+table.t td { color: var(--text-dim); }
+
+/* ---------------------------------------------------------------- figures */
+figure.fig { margin: 0; }
+figure.fig .frame { background: var(--paper); border: 1px solid var(--line-soft); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); overflow-x: auto; }
+figure.fig img { display: block; margin: 0 auto; border-radius: 4px; height: auto; }
+figure.fig svg { display: block; width: 100%; height: auto; }
+figure.fig figcaption { font-size: 12.5px; color: var(--text-faint); margin-top: 10px; text-align: center; }
+.fig.wide .frame { padding: 14px; }
+.fig.wide img { min-width: 900px; }
+.zoom { cursor: zoom-in; }
+.lightbox { position: fixed; inset: 0; z-index: 50; background: rgba(38,41,46,.82); display: grid; place-items: center; padding: 24px; cursor: zoom-out; overflow: auto; }
+.lightbox img { max-width: none; width: min(2400px, 180vw); background: #fff; border-radius: 6px; }
+
+/* SVG diagram primitives */
+.dg text { font-family: var(--font-ui); }
+.dg .t { font-size: 13px; font-weight: 600; fill: var(--text); }
+.dg .tl { font-size: 12px; fill: var(--text-dim); }
+.dg .tw { font-size: 13px; font-weight: 600; fill: #fff; }
+.dg .tws { font-size: 11px; fill: rgba(255,255,255,.85); }
+.dg .tm { font-family: var(--font-mono); font-size: 11px; fill: var(--accent-text); }
+.dg .th { font-family: var(--font-serif); font-size: 16px; font-weight: 500; fill: var(--text); }
+.dg.lg .t { font-size: 16px; } .dg.lg .tl { font-size: 14px; } .dg.lg .tw { font-size: 15px; } .dg.lg .tws { font-size: 12.5px; } .dg.lg .tm { font-size: 13px; }
+.dg .box { fill: var(--bg2); stroke: var(--line); }
+.dg .box2 { fill: var(--paper); stroke: var(--accent); }
+.dg .fillA { fill: var(--accent); stroke: var(--accent); }
+.dg .fillD { fill: #3b3e44; stroke: #3b3e44; }
+.dg .cont { fill: none; stroke: var(--line); stroke-width: 1.2; }
+.dg .contd { fill: none; stroke: var(--line); stroke-width: 1.2; stroke-dasharray: 5 4; }
+.dg .ln { stroke: var(--text-faint); stroke-width: 1.3; fill: none; }
+.dg .lnA { stroke: var(--accent); stroke-width: 1.8; fill: none; }
+.dg .dash { stroke-dasharray: 5 4; }
+.dg .ah { fill: var(--text-faint); }
+.dg .ahA { fill: var(--accent); }
+
+/* ---------------------------------------------------------------- cover */
+.cover { padding-top: 72px; }
+.repo-cards { margin-top: 40px; }
+.repo-cards .card h3 { font-family: var(--font-mono); font-size: 14px; font-weight: 500; }
+.repo-cards .card h3 a { color: var(--text); }
+.repo-cards .role { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-faint); margin-bottom: 8px; letter-spacing: .04em; text-transform: uppercase; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; align-items: center; }
+.btn {
+  display: inline-flex; align-items: center; gap: 10px; font: inherit; font-size: 15px; font-weight: 500;
+  padding: 11px 18px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--bg2); color: var(--text); cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+.btn:hover { text-decoration: none; background: var(--paper); border-color: var(--text-faint); }
+.btn svg { width: 16px; height: 16px; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 1px 0 rgba(0,0,0,.06), 0 6px 18px rgba(169,107,14,.22); }
+.btn.primary:hover { background: #955e0b; border-color: #955e0b; }
+.keys { font-size: 13px; color: var(--text-faint); margin-top: 18px; }
+kbd { font-size: 11.5px; border: 1px solid var(--line); border-bottom-width: 2px; background: var(--bg2); border-radius: 4px; padding: 0 5px; color: var(--text-dim); }
+
+.divider { text-align: center; padding-top: 110px; padding-bottom: 110px; }
+.divider h2 { font-size: clamp(30px, 4vw, 44px); }
+.divider .sub { margin: 0 auto; }
+
+/* ---------------------------------------------------------------- pager */
+.pager { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--line-soft); }
+.pager a {
+  display: block; border: 1px solid var(--line-soft); background: var(--bg1); border-radius: var(--radius); padding: 14px 18px; color: var(--text);
+  transition: border-color .15s, background .15s;
+}
+.pager a:hover { text-decoration: none; border-color: var(--text-faint); background: var(--paper); }
+.pager .lbl { display: block; font-family: var(--font-mono); font-size: 11.5px; color: var(--text-faint); letter-spacing: .04em; margin-bottom: 2px; }
+.pager .nx { text-align: right; grid-column: 2; }
+.pager .ttl { font-weight: 500; }
+
+/* ---------------------------------------------------------------- responsive */
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .side {
+    position: fixed; z-index: 30; top: var(--top); left: 0; width: min(320px, 86vw); background: var(--bg0);
+    box-shadow: var(--shadow-lg); transform: translateX(-102%); transition: transform .2s ease;
+  }
+  body.nav-open .side { transform: none; }
+  .icon-btn { display: inline-block; }
+  .page { padding: 36px 16px 32px; }
+  .brand .sub-b, .brand .sep { display: none; }
+  .counter { display: none; }
+}
+@media (max-width: 520px) { .brand-t { display: none; } .gh { display: none; } body { overflow-x: hidden; } .seg button { padding: 5px 8px; } .topbar { padding-inline: 12px; gap: 8px; } .pager { grid-template-columns: 1fr; } .pager .nx { grid-column: 1; } }
+</style>
+</head>
+<body class="paged">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="logo" viewBox="0 0 24 24" fill="none">
+      <circle cx="16.5" cy="7.5" r="3.4" fill="#a96b0e"/>
+      <path d="M14 10.5 3.5 20.5M15.5 12.5 8 19.5M12.5 9.5 6 14.5" stroke="#a96b0e" stroke-width="1.4" stroke-linecap="round" opacity=".65"/>
+    </symbol>
+    <symbol id="i-gh" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5a9.5 9.5 0 0 0-3 18.5c.5.1.6-.2.6-.5v-1.7c-2.6.6-3.2-1.2-3.2-1.2-.4-1.1-1-1.4-1-1.4-.9-.6 0-.6 0-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1 2.8.8.1-.6.3-1 .6-1.3-2.1-.2-4.3-1-4.3-4.7 0-1 .4-1.9 1-2.6-.1-.2-.4-1.2.1-2.5 0 0 .8-.3 2.6 1a9 9 0 0 1 4.8 0c1.8-1.3 2.6-1 2.6-1 .5 1.3.2 2.3.1 2.5.6.7 1 1.5 1 2.6 0 3.7-2.2 4.5-4.3 4.7.3.3.6.9.6 1.8v2.7c0 .3.2.6.7.5A9.5 9.5 0 0 0 12 2.5Z"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.6v.1"/></symbol>
+    <symbol id="i-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 21.5 20h-19z"/><path d="M12 10v4.5M12 17.2v.1"/></symbol>
+    <symbol id="i-server" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="4" width="16" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="16" height="6.5" rx="1.5"/><path d="M8 7.25h.01M8 16.75h.01" stroke-width="2.4" stroke-linecap="round"/></symbol>
+    <symbol id="i-graph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="6" cy="6" r="2.3"/><circle cx="18" cy="6" r="2.3"/><circle cx="12" cy="18" r="2.3"/><path d="M8 7.2 10.8 16M16 7.2 13.2 16M8.3 6h7.4"/></symbol>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#8b919b"/></marker>
+    <marker id="ahA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#a96b0e"/></marker>
+  </defs>
+</svg>
+
+<header class="topbar">
+  <button class="icon-btn" id="nav-toggle" type="button" aria-expanded="false" aria-controls="side">Contents</button>
+  <a class="brand" href="#cover"><svg><use href="#logo"/></svg><span class="brand-t">Building Scientific Agents</span><span class="sep">/</span><span class="sub-b">tutorial</span></a>
+  <div class="top-right">
+    <span class="counter" id="counter"></span>
+    <div class="seg" role="group" aria-label="View">
+      <button type="button" id="v-paged" aria-pressed="true">Pages</button>
+      <button type="button" id="v-all" aria-pressed="false">Scroll</button>
+    </div>
+    <a class="gh" href="https://github.com/HEP-KE/multiagent-client-demo" aria-label="GitHub repository"><svg><use href="#i-gh"/></svg></a>
+  </div>
+  <div class="progress" id="progress"></div>
+</header>
+
+<div class="layout">
+<nav class="side" id="side" aria-label="Pages"></nav>
+<main id="main">
+
+<!-- =============================================================== 1 cover -->
+<section class="page cover" id="cover" data-title="Start here" data-group="Introduction">
+  <span class="eyebrow"><span class="dot"></span>Hands-on tutorial · two Python repos</span>
+  <h1>Tutorial: <em>Building Scientific Agents</em></h1>
+  <p class="lede">A LangGraph multi-agent client talks to a cosmology MCP server, plans the analysis, calls the tools, and reproduces a matter power spectrum figure from a single query.</p>
+  <p class="meta-line">Nesar Ramachandra</p>
+  <div class="grid g2 repo-cards">
+    <div class="card">
+      <div class="ic"><svg><use href="#i-server"/></svg></div>
+      <div class="role">Server</div>
+      <h3><a href="https://github.com/HEP-KE/spectra-mcp-server">github.com/HEP-KE/spectra-mcp-server</a></h3>
+      <p>FastMCP server exposing 4 tools around the CLASS Boltzmann code.</p>
+    </div>
+    <div class="card">
+      <div class="ic"><svg><use href="#i-graph"/></svg></div>
+      <div class="role">Client</div>
+      <h3><a href="https://github.com/HEP-KE/multiagent-client-demo">github.com/HEP-KE/multiagent-client-demo</a></h3>
+      <p>LangGraph client, ~250 lines: two LLM roles (lead + worker).</p>
+    </div>
+  </div>
+  <div class="actions">
+    <a class="btn primary" href="#why">Begin<svg><use href="#i-arrow"/></svg></a>
+    <a class="btn" href="#setup-env">Jump to setup</a>
+  </div>
+  <p class="keys">Use <kbd>←</kbd> <kbd>→</kbd> to move between pages, or switch to <em>Scroll</em> to read everything on one page.</p>
+</section>
+
+<!-- =============================================================== 2 why -->
+<section class="page" id="why" data-title="Why agentic systems for science?" data-group="Introduction">
+  <div class="head"><div class="kicker">Motivation</div><h2>Why agentic systems for science?</h2></div>
+  <div class="split" style="grid-template-columns:minmax(0,1fr) minmax(0,1.1fr)">
+    <div>
+      <h3>Custom agentic systems vs commercial LLM interfaces</h3>
+      <p class="sub" style="font-size:15px;margin-bottom:12px">Limitations in LLMs can be overcome with agentic systems.</p>
+      <ul class="pts">
+        <li>Knowledge cut-off vs RAG / knowledge databases</li>
+        <li>Fabrication of synthetic data / codes vs custom tools</li>
+        <li>Big-data handling</li>
+      </ul>
+      <h3 style="margin-top:28px">Custom agentic systems vs commercial LLM harnesses</h3>
+      <ul class="pts" style="margin-top:12px">
+        <li>Reasoning abilities of LLMs + coding expertise to be combined with scientific datasets</li>
+        <li>Custom tools and custom harnesses provide a higher level of trust in the results</li>
+        <li>Ability to work with HPC clusters and exascale codes</li>
+        <li>Privacy and control concerns</li>
+        <li>Scaling across large scientific user base</li>
+        <li>Reusability vs token usage concerns</li>
+      </ul>
+    </div>
+    <figure class="fig">
+      <div class="frame">
+        <svg class="dg lg" viewBox="0 0 560 480" role="img" aria-label="Three approaches to LLM deployment: a single pre-trained LLM, a base LLM with a fine-tuning layer, and an agentic system where an orchestrator LLM coordinates specialists that share tools.">
+          <!-- row 1 -->
+          <text class="t" x="10" y="22">1. Custom pre-trained LLM</text>
+          <circle cx="28" cy="62" r="16" class="box2"/><circle cx="28" cy="57" r="4" class="ahA"/><path d="M20 70q8-9 16 0" class="lnA"/>
+          <path d="M48 62H146" class="ln" marker-end="url(#ah)"/><text class="tl" x="72" y="54">Query</text>
+          <rect x="150" y="42" width="260" height="40" rx="8" class="fillA"/><text class="tw" x="280" y="67" text-anchor="middle">Pre-trained LLM</text>
+          <path d="M410 62H508" class="ln" marker-end="url(#ah)"/><text class="tl" x="424" y="54">Response</text>
+          <circle cx="530" cy="62" r="16" class="box2"/><text class="tm" x="530" y="65" text-anchor="middle">···</text>
+          <text class="tl" x="280" y="102" text-anchor="middle">Single model trained for general purpose use</text>
+          <!-- row 2 -->
+          <text class="t" x="10" y="146">2. Fine-tuned LLM</text>
+          <circle cx="28" cy="188" r="16" class="box2"/><circle cx="28" cy="183" r="4" class="ahA"/><path d="M20 196q8-9 16 0" class="lnA"/>
+          <path d="M48 188H146" class="ln" marker-end="url(#ah)"/><text class="tl" x="72" y="180">Query</text>
+          <rect x="150" y="166" width="260" height="22" rx="6" class="fillD"/><text class="tws" x="280" y="181" text-anchor="middle">Base LLM</text>
+          <rect x="150" y="190" width="260" height="22" rx="6" class="fillA"/><text class="tws" x="280" y="205" text-anchor="middle">Fine-tuning layer</text>
+          <path d="M410 188H508" class="ln" marker-end="url(#ah)"/><text class="tl" x="424" y="180">Response</text>
+          <circle cx="530" cy="188" r="16" class="box2"/><text class="tm" x="530" y="191" text-anchor="middle">···</text>
+          <text class="tl" x="280" y="232" text-anchor="middle">Base model with additional domain-specific training</text>
+          <!-- row 3 -->
+          <text class="t" x="10" y="276">3. Agentic system</text>
+          <circle cx="28" cy="316" r="16" class="box2"/><circle cx="28" cy="311" r="4" class="ahA"/><path d="M20 324q8-9 16 0" class="lnA"/>
+          <path d="M48 316H146" class="ln" marker-end="url(#ah)"/><text class="tl" x="72" y="308">Query</text>
+          <rect x="150" y="296" width="260" height="40" rx="8" class="fillA"/><text class="tw" x="280" y="321" text-anchor="middle">Orchestrator / Router LLM</text>
+          <path d="M410 316H508" class="ln" marker-end="url(#ah)"/><text class="tl" x="424" y="308">Response</text>
+          <circle cx="530" cy="316" r="16" class="box2"/><text class="tm" x="530" y="319" text-anchor="middle">···</text>
+          <path d="M200 338V366M280 338V366M360 338V366" class="ln" marker-start="url(#ah)" marker-end="url(#ah)"/>
+          <rect x="162" y="368" width="76" height="30" rx="6" class="fillD"/><text class="tws" x="200" y="387" text-anchor="middle">Specialist 1</text>
+          <rect x="242" y="368" width="76" height="30" rx="6" class="fillD"/><text class="tws" x="280" y="387" text-anchor="middle">Specialist 2</text>
+          <rect x="322" y="368" width="76" height="30" rx="6" class="fillD"/><text class="tws" x="360" y="387" text-anchor="middle">Specialist 3</text>
+          <path d="M200 398V428H244M280 398V414M360 398V428H316" class="ln dash" marker-end="url(#ah)"/>
+          <rect x="246" y="416" width="68" height="26" rx="6" class="box"/><text class="tl" x="280" y="433" text-anchor="middle">Tools</text>
+          <text class="tl" x="280" y="468" text-anchor="middle">Multiple specialized models working in coordination</text>
+        </svg>
+      </div>
+      <figcaption>Three approaches to LLM deployment.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- =============================================================== 3 client+server -->
+<section class="page" id="architecture" data-title="Client + server model" data-group="Introduction">
+  <div class="head"><div class="kicker">Architecture</div><h2>Agentic systems: client + server model</h2></div>
+  <figure class="fig wide">
+    <div class="frame"><img class="zoom" src="assets/architecture.png" width="4000" height="861" alt="Architecture: an agent layer (HEP-Genesis-Agent with LangGraph orchestration, supervisor, router, worker agents, state and memory, LLM backends) talks MCP to an MCP server, which reaches domain servers (extragalactic cosmology, muon-to-electron, knowledge base, more physics domains). Remote jobs go through federated dispatch (IRI and Globus) to ALCF and NERSC services, compute, and storage."></div>
+    <figcaption>Click the figure to enlarge.</figcaption>
+  </figure>
+  <p style="margin-top:28px"><strong>Multi-agent systems with HPC scaling:</strong> <span style="color:var(--text-dim)">harnesses on local systems, hosted servers for each sub-field, APIs for control and transfer.</span></p>
+  <ul class="pts" style="margin-top:14px">
+    <li>Integration with Genesis Mission projects (HEP-Knowledge extraction and Quarks2Cosmos): customized agentic systems for physics.</li>
+    <li>Tutorials, slack channels, and public GitHub repos are available outside the collaborations.
+      <ul class="pts"><li>Significant interest from science collaborations, universities and industry partners.</li></ul>
+    </li>
+    <li>Bridge between DOE-Genesis platform and science teams.
+      <ul class="pts"><li>Topics: LSST-DESC data exploration, Mu2e studies, EIC simulation-based inference, DESI clustering pipelines, beamline optimization, foundation models for HEP and NP, ….</li></ul>
+    </li>
+  </ul>
+</section>
+
+<!-- =============================================================== 4 MCP -->
+<section class="page" id="mcp" data-title="Interfacing LLMs and tools" data-group="Introduction">
+  <div class="head"><div class="kicker">Protocol</div><h2>Interfacing between LLMs and tools</h2></div>
+  <div class="split" style="grid-template-columns:minmax(0,1fr) minmax(0,1.6fr)">
+    <div class="aside">
+      <h3>MCP: a standard interface between agents and tools</h3>
+      <ul class="pts">
+        <li>Write the tool once and host it on a server. Any MCP-speaking client (our LangGraph client, Claude Code, Codex) can call it.</li>
+        <li>The server owns the science: the data files and plotting all live server-side.</li>
+        <li>The client only sees tool schemas and small results, fully isolated from the servers.</li>
+      </ul>
+      <h3>Multiple ways to manage MCP</h3>
+      <ul class="pts">
+        <li><strong>stdio:</strong> the client launches the server as a subprocess (same machine).</li>
+        <li><strong>streamable-http:</strong> the server runs anywhere, and clients connect over the network. Covered today.</li>
+      </ul>
+    </div>
+    <figure class="fig">
+      <div class="frame">
+        <svg class="dg" viewBox="0 0 640 420" role="img" aria-label="One client, many servers: the HEP-KE MultiAgent client speaks MCP to a microlensing server, a Lyman-alpha statistics server, a knowledge base server, and other MCP servers. The servers require Genesis infrastructure: compute libraries, data APIs such as arXiv, and AmSC LLM APIs.">
+          <text class="th" x="320" y="22" text-anchor="middle">One client, many servers</text>
+          <!-- client -->
+          <rect x="8" y="160" width="150" height="104" rx="10" class="contd" style="stroke-dasharray:none"/>
+          <text class="tm" x="20" y="180">CLIENT LAYER</text>
+          <rect x="20" y="190" width="126" height="60" rx="8" class="box2"/>
+          <text class="t" x="83" y="215" text-anchor="middle">HEP-KE MultiAgent</text>
+          <text class="tl" x="83" y="235" text-anchor="middle">(any compatible client)</text>
+          <!-- servers container -->
+          <rect x="228" y="40" width="200" height="370" rx="12" class="cont"/>
+          <text class="tm" x="244" y="60">MCP SERVERS</text>
+          <rect x="244" y="72" width="168" height="64" rx="8" class="box"/>
+          <text class="t" x="328" y="100" text-anchor="middle">Microlensing</text><text class="tl" x="328" y="118" text-anchor="middle">MCP server</text>
+          <rect x="244" y="152" width="168" height="64" rx="8" class="box"/>
+          <text class="t" x="328" y="180" text-anchor="middle">LyAlpha-MCP</text><text class="tl" x="328" y="198" text-anchor="middle">statistics server</text>
+          <rect x="244" y="232" width="168" height="64" rx="8" class="box"/>
+          <text class="t" x="328" y="260" text-anchor="middle">Knowledge base</text><text class="tl" x="328" y="278" text-anchor="middle">MCP server</text>
+          <rect x="244" y="318" width="168" height="64" rx="8" class="box" style="stroke-dasharray:5 4;fill:transparent"/>
+          <text class="t" x="328" y="346" text-anchor="middle">Other</text><text class="tl" x="328" y="364" text-anchor="middle">MCP server</text>
+          <!-- client arrows -->
+          <path d="M158 196C190 150 205 110 241 104" class="lnA" marker-end="url(#ahA)"/>
+          <path d="M158 206C195 195 210 186 241 184" class="lnA" marker-end="url(#ahA)"/>
+          <path d="M158 226C195 236 210 262 241 264" class="lnA" marker-end="url(#ahA)"/>
+          <path d="M158 244C190 290 205 346 241 350" class="lnA dash" marker-end="url(#ahA)"/>
+          <text class="tm" x="164" y="142">MCP</text>
+          <!-- infra -->
+          <rect x="478" y="110" width="154" height="236" rx="12" class="contd"/>
+          <text class="tm" x="490" y="130">GENESIS INFRA</text>
+          <rect x="490" y="146" width="130" height="40" rx="20" class="box2"/><text class="tl" x="555" y="171" text-anchor="middle">Compute libraries</text>
+          <rect x="490" y="212" width="130" height="46" rx="23" class="box2"/><text class="tl" x="555" y="231" text-anchor="middle">Data APIs</text><text class="tl" x="555" y="247" text-anchor="middle">(arXiv, etc.)</text>
+          <rect x="490" y="284" width="130" height="40" rx="20" class="box2"/><text class="tl" x="555" y="309" text-anchor="middle">AmSC LLM APIs</text>
+          <path d="M412 112C450 118 460 150 487 160" class="ln dash" marker-end="url(#ah)"/>
+          <path d="M412 184C450 180 460 172 487 168" class="ln dash" marker-end="url(#ah)"/>
+          <path d="M412 256C450 250 460 238 487 236" class="ln dash" marker-end="url(#ah)"/>
+          <path d="M412 272C450 280 460 298 487 300" class="ln dash" marker-end="url(#ah)"/>
+          <path d="M412 350C450 346 462 318 487 310" class="ln dash" marker-end="url(#ah)"/>
+          <text class="tm" x="424" y="222" style="fill:var(--text-faint)">require</text>
+        </svg>
+      </div>
+      <figcaption>MCP tool server pattern: one client, many servers.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- =============================================================== 5 repos -->
+<section class="page" id="repos" data-title="Today's two repos" data-group="Introduction">
+  <div class="head"><div class="kicker">Today's tutorial</div><h2>Two Python-based repos for client and server</h2></div>
+  <div class="grid g2">
+    <div class="card">
+      <h3 style="font-family:var(--font-mono);font-weight:500"><a href="https://github.com/HEP-KE/spectra-mcp-server">HEP-KE/spectra-mcp-server</a></h3>
+      <ul class="pts" style="margin-top:12px">
+        <li>FastMCP server exposing 4 tools around the CLASS Boltzmann code.</li>
+        <li>Bundled eBOSS DR14 Ly-α forest P(k) data (19 bins, Chabanier+ 2019).</li>
+        <li><code>notebooks/01_manual_pipeline.ipynb</code>: the science by hand, no LLM.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="font-family:var(--font-mono);font-weight:500"><a href="https://github.com/HEP-KE/multiagent-client-demo">HEP-KE/multiagent-client-demo</a></h3>
+      <ul class="pts" style="margin-top:12px">
+        <li>LangGraph client, ~250 lines: two LLM roles (lead + worker).</li>
+        <li><code>notebooks/02_demo_client.ipynb</code>: the agent run, over HTTP.</li>
+        <li><code>notebooks/03_next_steps.ipynb</code>: stdio, Groq, skills, memory.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="split" style="margin-top:4px;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);align-items:start">
+    <div class="query">
+      <div class="kicker">Sample query for the agent · notebook 02</div>
+<pre>TASK = f"""Compute the linear matter power spectrum at z=0
+for three cosmologies:
+    (1) standard LCDM,
+    (2) LCDM with total neutrino mass 0.10 eV, and
+    (3) wCDM with w0=-0.9.
+Then plot all three against the eBOSS DR14 Lyman-alpha forest data,
+using LCDM as the ratio reference. Save all files to <span class="var">{OUTPUT_DIR}</span>."""</pre>
+    </div>
+    <figure class="fig" style="margin-top:28px;max-width:400px;justify-self:center;width:100%">
+      <div class="frame" style="padding:10px"><img class="zoom" src="assets/power_spectrum.png" width="1056" height="1054" alt="Matter power spectrum: theory vs observations. LCDM, LCDM with 0.1 eV neutrino mass, and wCDM with w0 = -0.9 plotted against eBOSS DR14 Lyman-alpha forest points, with a ratio-to-LCDM panel below."></div>
+      <figcaption>The target figure: three cosmologies vs eBOSS DR14.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- =============================================================== 6 setup env -->
+<section class="page" id="setup-env" data-title="Clone, install, verify" data-group="Setup">
+  <div class="head">
+    <div class="kicker">Pre-session setup · about 10 minutes</div>
+    <h2>Clone, install, verify</h2>
+    <p class="sub">Please do this before the tutorial. The tutorial involves 2 repos. One Python environment serves both, and you also need access to LLM tokens.</p>
+  </div>
+  <div class="steps">
+    <div class="step"><div class="num">1</div><div>
+      <h3>Clone both repos side by side</h3>
+      <div class="code"><button class="copy" type="button">Copy</button><pre><span class="p">$ </span>git clone https://github.com/HEP-KE/spectra-mcp-server.git
+<span class="p">$ </span>git clone https://github.com/HEP-KE/multiagent-client-demo.git</pre></div>
+      <p style="margin-top:10px">The client notebook assumes <code>../spectra-mcp-server</code> exists.</p>
+    </div></div>
+    <div class="step"><div class="num">2</div><div>
+      <h3>Create the conda environment</h3>
+      <div class="code"><button class="copy" type="button">Copy</button><pre><span class="p">$ </span>conda create -n spectra-tutorial python=3.12 -y
+<span class="p">$ </span>conda activate spectra-tutorial
+
+<span class="p">$ </span>cd spectra-mcp-server
+<span class="p">$ </span>pip install cython numpy
+<span class="p">$ </span>pip install -e ".[dev]"
+
+<span class="p">$ </span>cd ../multiagent-client-demo
+<span class="p">$ </span>pip install -r requirements.txt</pre></div>
+      <p style="margin-top:10px">The first <code>pip install</code> provides build helpers for <code>classy</code>. The second pulls in classy/CLASS, mcp, and the rest of the necessary packages.</p>
+    </div></div>
+    <div class="step"><div class="num">3</div><div>
+      <h3>Verify CLASS works</h3>
+      <div class="code"><button class="copy" type="button">Copy</button><pre><span class="p">$ </span>python -c "from classy import Class; c = Class(); c.set({'output':'mPk'}); c.compute(); print('CLASS OK')"</pre></div>
+      <p style="margin-top:10px">If <code>pip install classy</code> failed (it compiles C code):</p>
+      <ul class="pts" style="margin-top:8px">
+        <li><strong>macOS:</strong> run <code>xcode-select --install</code>, then retry <code>pip install classy</code>.</li>
+        <li><strong>Any platform:</strong> <code>conda install -c conda-forge classy</code>.</li>
+      </ul>
+    </div></div>
+  </div>
+</section>
+
+<!-- =============================================================== 7 keys -->
+<section class="page" id="setup-keys" data-title="Free API keys" data-group="Setup">
+  <div class="head">
+    <div class="kicker">Pre-session setup · step 4</div>
+    <h2>Get a free API key from Gemini and Groq</h2>
+  </div>
+  <div class="split">
+    <div class="steps">
+      <div class="step"><div class="num">a</div><div>
+        <h3>Sign in to Google AI Studio</h3>
+        <p>Go to <a href="https://aistudio.google.com/apikey">aistudio.google.com/apikey</a> and log in with your Google account. Make sure there are no credit cards on file.</p>
+      </div></div>
+      <div class="step"><div class="num">b</div><div>
+        <h3>Create API key</h3>
+        <p>Copy the key and save it somewhere private.</p>
+      </div></div>
+      <div class="step"><div class="num">c</div><div>
+        <h3>Create your <code>.env</code></h3>
+        <p>In <code>multiagent-client-demo/</code>, copy the provided example and add your key.</p>
+        <div class="code"><button class="copy" type="button">Copy</button><pre><span class="p">$ </span>cp .env.example .env
+<span class="c"># edit .env:  GOOGLE_API_KEY=AIza...</span></pre></div>
+        <p style="margin-top:10px">The <code>.env</code> file is gitignored. Never commit keys.</p>
+      </div></div>
+      <div class="step"><div class="num">d</div><div>
+        <h3>Recommended backup: a free Groq key</h3>
+        <p>Sign up at <a href="https://console.groq.com/keys">console.groq.com/keys</a> with an email, no credit card. Add it to <code>.env</code> as <code>GROQ_API_KEY=...</code>.</p>
+        <p>Groq serves open-weight US models (gpt-oss-120b) at ~14,400 requests/day. In the notebook it's just <code>make_llm("groq")</code> instead of <code>make_llm()</code>.</p>
+        <p>If your university, lab, or collaboration provides tokens, those can be included too.</p>
+      </div></div>
+    </div>
+    <div>
+      <div class="note warn" style="margin-top:0"><svg><use href="#i-warn"/></svg><div>
+        <strong>Budget warning.</strong> As of mid-2026 the Gemini free tier allows ~20 requests per day. In a typical API plan, once the free quota is exhausted, you start paying per token. To avoid this charge, simply do not link any credit card for payment.
+      </div></div>
+      <div class="note"><svg><use href="#i-info"/></svg><div>
+        One full agent run in the tutorial uses ~10 requests, so your key is good for roughly <strong>1–2 runs per day</strong>. Run the test on the next page when you set up, then leave the key alone until the session. Quota resets at midnight Pacific.
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================================== 8 test -->
+<section class="page" id="setup-test" data-title="Test the setup" data-group="Setup">
+  <div class="head">
+    <div class="kicker">Pre-session setup · step 5</div>
+    <h2>Test the setup</h2>
+    <p class="sub">Run the server's test suite, then ask the model to say READY.</p>
+  </div>
+  <div class="code"><button class="copy" type="button">Copy</button><pre><span class="p">$ </span>cd spectra-mcp-server &amp;&amp; pytest
+<span class="p">$ </span>cd ../multiagent-client-demo &amp;&amp; python -c "
+from dotenv import load_dotenv; load_dotenv()
+from agents import make_llm
+print(make_llm().invoke('Say READY').content)"</pre></div>
+  <div class="grid g2" style="margin-top:24px">
+    <div class="card"><span class="tag ok">expected</span><h3>From pytest</h3><p><code>7 passed</code></p></div>
+    <div class="card"><span class="tag ok">expected</span><h3>From the model</h3><p><code>READY</code></p></div>
+  </div>
+  <p style="margin-top:20px;color:var(--text-dim)">If both print, you're set. If things don't work, please <a href="https://github.com/HEP-KE/multiagent-client-demo/issues">raise an issue on GitHub</a>.</p>
+</section>
+
+<!-- =============================================================== 9 hosted -->
+<section class="page" id="setup-hosted" data-title="Try the hosted servers" data-group="Setup">
+  <div class="head">
+    <div class="kicker">Pre-session setup · step 6 · optional, highly recommended</div>
+    <h2>Try the hosted servers from an AI app</h2>
+    <p class="sub">The tutorial servers, plus a larger production cosmology server, run on a public demo host. You can talk to them from Claude desktop, ChatGPT, Claude Code, Codex, or Cursor <strong>with nothing installed</strong>, and get a feel for what the tutorial builds.</p>
+  </div>
+  <a class="btn" href="https://github.com/HEP-KE/multiagent-client-demo/blob/main/link_servers.md">Setup per app, server URLs, and sample questions<svg><use href="#i-arrow"/></svg></a>
+</section>
+
+<!-- =============================================================== 10 server tools -->
+<section class="page" id="server-tools" data-title="Tools are plain Python functions" data-group="Server">
+  <div class="head"><div class="kicker">Server · spectra-mcp-server</div><h2>Tools are plain Python functions</h2></div>
+  <div class="split">
+    <div class="code" style="margin-top:0">
+      <div class="fn"><span class="dotc"></span><a href="https://github.com/HEP-KE/spectra-mcp-server/blob/main/tools/spectra_tools.py">tools/spectra_tools.py</a></div>
+      <button class="copy" type="button">Copy</button>
+<pre><span class="d">@validate_call</span>
+<span class="k">def</span> compute_power_spectrum(
+    model: Literal[<span class="s">"lcdm"</span>, <span class="s">"nu_mass"</span>, <span class="s">"wcdm"</span>],
+    output_dir: str,
+    sum_mnu_eV: Annotated[float, Field(ge=0, le=1.0)] = 0.10,
+    w0: Annotated[float, Field(ge=-2.0, le=-0.3)] = -0.9,
+    ...
+) -&gt; ArtifactResult:
+    <span class="c">"""Compute a linear matter power spectrum P(k)
+    with the CLASS Boltzmann code.
+
+    Use this tool once per cosmological model. It
+    writes a CSV file and returns its path. Pass the
+    returned file path to plot_power_spectra —
+    never copy the numbers.
+    """</span></pre>
+    </div>
+    <div class="aside">
+      <h3>No MCP imports here</h3>
+      <ul class="pts">
+        <li>Type hints, <code>Field</code> constraints, and the docstring become the tool schema the agent sees.</li>
+        <li><code>ArtifactResult</code>: status, files, message, metadata.</li>
+        <li>Arrays travel as CSV file paths, never through the LLM context.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================================== 11 server wrapper -->
+<section class="page" id="server-wrapper" data-title="From package to MCP server" data-group="Server">
+  <div class="head"><div class="kicker">Server · spectra-mcp-server</div><h2>From Python package to MCP server</h2></div>
+  <div class="split">
+    <div>
+      <div class="code" style="margin-top:0">
+        <div class="fn"><span class="dotc"></span><a href="https://github.com/HEP-KE/spectra-mcp-server/blob/main/pyproject.toml">pyproject.toml</a></div>
+        <button class="copy" type="button">Copy</button>
+<pre><span class="k">[tool.mcp-server]</span>
+tool_modules = [<span class="s">"tools"</span>]</pre>
+      </div>
+      <div class="code" style="margin-top:14px">
+        <div class="fn"><span class="dotc"></span><a href="https://github.com/HEP-KE/spectra-mcp-server/blob/main/tools/__init__.py">tools/__init__.py</a></div>
+        <button class="copy" type="button">Copy</button>
+<pre>__all__ = [
+    <span class="s">"get_eboss_data"</span>, <span class="s">"list_cosmology_models"</span>,
+    <span class="s">"compute_power_spectrum"</span>, <span class="s">"plot_power_spectra"</span>,
+]</pre>
+      </div>
+      <div class="code" style="margin-top:14px">
+        <div class="fn"><span class="dotc"></span>Run it · terminal, in spectra-mcp-server/</div>
+        <button class="copy" type="button">Copy</button>
+<pre><span class="p">$ </span>python -m mcp_server --transport streamable-http --port 8000
+<span class="c"># clients connect to http://127.0.0.1:8000/mcp</span></pre>
+      </div>
+    </div>
+    <div class="aside">
+      <h3>A generic wrapper</h3>
+      <ul class="pts">
+        <li><code>mcp_server/</code> reads pyproject, imports the modules, and registers every name in <code>__all__</code> as an MCP tool.</li>
+        <li>Add your own science: drop in a module, extend <code>__all__</code>. Nothing else changes.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================================== 12 client connect -->
+<section class="page" id="client-connect" data-title="Connect to the server, pick an LLM" data-group="Client">
+  <div class="head"><div class="kicker">Client · multiagent-client-demo</div><h2>Connect to the server, pick an LLM</h2></div>
+  <div class="split">
+    <div>
+      <div class="code" style="margin-top:0">
+        <div class="fn"><span class="dotc"></span>Open the notebook · second terminal, in multiagent-client-demo/</div>
+        <button class="copy" type="button">Copy</button>
+<pre><span class="p">$ </span>jupyter lab notebooks/02_demo_client.ipynb</pre>
+      </div>
+      <div class="code" style="margin-top:14px">
+        <div class="fn"><span class="dotc"></span><a href="https://github.com/HEP-KE/multiagent-client-demo/blob/main/notebooks/02_demo_client.ipynb">notebooks/02_demo_client.ipynb</a></div>
+        <button class="copy" type="button">Copy</button>
+<pre>HTTP_CONFIG = {
+    <span class="s">"spectra"</span>: {
+        <span class="s">"transport"</span>: <span class="s">"streamable_http"</span>,
+        <span class="s">"url"</span>: <span class="s">"http://127.0.0.1:8000/mcp"</span>,
+    }
+}
+tools = <span class="k">await</span> load_tools(HTTP_CONFIG)</pre>
+      </div>
+      <div class="code" style="margin-top:14px">
+        <div class="fn"><span class="dotc"></span><a href="https://github.com/HEP-KE/multiagent-client-demo/blob/main/agents/llm.py">agents/llm.py</a></div>
+        <button class="copy" type="button">Copy</button>
+<pre>llm = make_llm()         <span class="c"># Gemini free tier (default)</span>
+llm = make_llm(<span class="s">"groq"</span>)   <span class="c"># alt: open-weight gpt-oss-120b</span></pre>
+      </div>
+    </div>
+    <div class="aside">
+      <h3>MCP tools → LangChain tools</h3>
+      <ul class="pts"><li><code>langchain-mcp-adapters</code> fetches the schemas. The client can now call server code it has never imported.</li></ul>
+      <h3>Compatible LLM endpoints</h3>
+      <ul class="pts">
+        <li>The free version of Gemini Flash is the default. OpenAI gpt-oss-120b, an open-weight model hosted on Groq, is an alternative.</li>
+        <li>Any compatible LLM will work (Anthropic, OpenAI models).</li>
+        <li>Keys live in <code>.env</code>, never in code.</li>
+      </ul>
+      <h3>Note</h3>
+      <ul class="pts">
+        <li>The Gemini free tier provides ~20 requests/day, about one full agent run.</li>
+        <li>The LLM is not state-of-the-art by any means. Token costs can rise for paid models.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================================== 13 roles -->
+<section class="page" id="client-roles" data-title="Two LLM roles: lead and worker" data-group="Client">
+  <div class="head"><div class="kicker">Client · multiagent-client-demo</div><h2>Two LLM roles: lead and worker <em>(subagents)</em></h2></div>
+  <div class="split" style="grid-template-columns:minmax(0,1fr) minmax(0,1.45fr)">
+    <div class="aside">
+      <h3>Lead · visited twice</h3>
+      <ul class="pts">
+        <li>First visit: break the task into a 2–5 step JSON plan.</li>
+        <li>Last visit: write the final markdown report.</li>
+      </ul>
+      <h3>Worker · once per step</h3>
+      <ul class="pts">
+        <li>A ~10-line ReAct loop: call tools until the model replies with text.</li>
+        <li>Fresh messages each step. File paths from earlier steps are passed as context.</li>
+      </ul>
+    </div>
+    <div class="code" style="margin-top:0">
+      <div class="fn"><span class="dotc"></span><a href="https://github.com/HEP-KE/multiagent-client-demo/blob/main/agents/nodes.py">agents/nodes.py</a> · the worker loop</div>
+      <button class="copy" type="button">Copy</button>
+<pre><span class="k">for</span> _ <span class="k">in</span> range(MAX_TOOL_ITERATIONS):
+    reply = <span class="k">await</span> _ainvoke(bound, messages)
+    messages.append(reply)
+    <span class="k">if not</span> reply.tool_calls:
+        <span class="k">break</span>
+    <span class="k">for</span> call <span class="k">in</span> reply.tool_calls:
+        result = <span class="k">await</span> tools_by_name[call[<span class="s">"name"</span>]] \
+            .ainvoke(call[<span class="s">"args"</span>])
+        messages.append(
+            ToolMessage(str(result),
+                        tool_call_id=call[<span class="s">"id"</span>]))</pre>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================================== 14 graph -->
+<section class="page" id="client-graph" data-title="The graph: routing is plain Python" data-group="Client">
+  <div class="head"><div class="kicker">Client · multiagent-client-demo</div><h2>The graph: routing is plain Python</h2></div>
+  <div class="split">
+    <div class="code" style="margin-top:0">
+      <div class="fn"><span class="dotc"></span><a href="https://github.com/HEP-KE/multiagent-client-demo/blob/main/agents/graph.py">agents/graph.py</a></div>
+      <button class="copy" type="button">Copy</button>
+<pre><span class="k">def</span> route_from_worker(state):
+    <span class="k">if</span> state[<span class="s">"current"</span>] &lt; len(state[<span class="s">"plan"</span>]):
+        <span class="k">return</span> <span class="s">"worker"</span>      <span class="c"># more steps to run</span>
+    <span class="k">return</span> <span class="s">"lead"</span>            <span class="c"># plan done -&gt; report</span>
+
+graph = StateGraph(AgentState)
+graph.add_node(<span class="s">"lead"</span>, make_lead(llm, tools))
+graph.add_node(<span class="s">"worker"</span>, make_worker(llm, tools))
+graph.add_edge(START, <span class="s">"lead"</span>)
+graph.add_conditional_edges(<span class="s">"lead"</span>, route_from_lead,
+                            [<span class="s">"worker"</span>, END])
+graph.add_conditional_edges(<span class="s">"worker"</span>, route_from_worker,
+                            [<span class="s">"worker"</span>, <span class="s">"lead"</span>])
+<span class="k">return</span> graph.compile()</pre>
+    </div>
+    <div class="aside">
+      <h3>The flow</h3>
+      <p style="font-family:var(--font-mono);font-size:13px;color:var(--text);line-height:1.9">START → lead (plan) → worker → worker → … → lead (report) → END</p>
+      <h3>The “supervisor” is deterministic</h3>
+      <ul class="pts"><li>Two if-statements route the whole system. Not every agent in a multi-agent system needs to be an LLM call.</li></ul>
+      <p class="em">The <a href="#backup-graph">graph diagram</a> is in the backup pages.</p>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================================== 15 state -->
+<section class="page" id="client-state" data-title="State: what flows through the graph" data-group="Client">
+  <div class="head"><div class="kicker">Client · multiagent-client-demo</div><h2>State: what flows through the graph</h2></div>
+  <div class="split">
+    <div class="code" style="margin-top:0">
+      <div class="fn"><span class="dotc"></span><a href="https://github.com/HEP-KE/multiagent-client-demo/blob/main/agents/state.py">agents/state.py</a></div>
+      <button class="copy" type="button">Copy</button>
+<pre><span class="k">class</span> AgentState(TypedDict):
+    task: str                <span class="c"># the user's science question</span>
+    plan: list[Step]         <span class="c"># written once by the lead</span>
+    current: int             <span class="c"># index of the next step</span>
+    step_results: list[str]  <span class="c"># one summary per step</span>
+    final_report: str        <span class="c"># written by the lead, at the end</span>
+    history: list[str]       <span class="c"># previous runs (for follow-ups)</span></pre>
+    </div>
+    <div class="aside">
+      <h3>Agent state through a directed graph</h3>
+      <ul class="pts">
+        <li>Minimal setup: no worker types, no checkpointing. Production systems grow each of those.</li>
+        <li>Every node receives the state and returns a partial update. LangGraph merges it.</li>
+      </ul>
+      <p class="em">A <a href="#backup-state">snapshot of the state mid-run</a> is in the backup pages.</p>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================================== 16 scope -->
+<section class="page" id="scope" data-title="What we cover, and what we don't" data-group="Wrap-up">
+  <div class="head"><div class="kicker">Scope</div><h2>What we cover today, and what we don't</h2></div>
+  <div class="grid g3">
+    <div class="card">
+      <span class="tag ok">covered</span>
+      <h3>Covered</h3>
+      <ul class="pts" style="margin-top:12px">
+        <li><strong>01:</strong> building science tools by hand. CLASS spectra vs eBOSS DR14, tools called as plain Python.</li>
+        <li>Launch the MCP server over streamable-http, and list its tools from the client.</li>
+        <li><strong>02:</strong> the agent run. Plan → tool calls → report, streamed live.</li>
+        <li><strong>Eval:</strong> the agent's figure vs the ground-truth figure, side by side.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="tag acc">notebook 03</span>
+      <h3>Implemented, not covered</h3>
+      <ul class="pts" style="margin-top:12px">
+        <li>stdio transport</li><li>Different LLM backend</li><li>Skills</li><li>Memory</li><li>Follow-up runs</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="tag">future</span>
+      <h3>Not implemented</h3>
+      <ul class="pts" style="margin-top:12px">
+        <li>Parallel workers</li><li>Checkpointing / human-in-the-loop</li><li>Systematic evals</li><li>Auth + deployment</li><li>Multiple servers</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================================== 17 backup divider -->
+<section class="page divider" id="backup" data-title="Backup: extras" data-group="Backup">
+  <div class="kicker">Backup</div>
+  <h2>Skills, memory, follow-ups &amp; backends</h2>
+  <p class="sub">Demo in <code>notebooks/03_next_steps.ipynb</code></p>
+</section>
+
+<!-- =============================================================== 18 skills -->
+<section class="page" id="backup-skills" data-title="Skills: recipes on demand" data-group="Backup">
+  <div class="head"><div class="kicker">Backup</div><h2>Skills: recipes loaded on demand</h2></div>
+  <div class="split">
+    <div>
+      <div class="code" style="margin-top:0">
+        <div class="fn"><span class="dotc"></span><a href="https://github.com/HEP-KE/multiagent-client-demo/tree/main/skills">skills/cosmology-comparison.md</a></div>
+        <button class="copy" type="button">Copy</button>
+<pre><span class="c">---</span>
+<span class="k">name:</span> cosmology-comparison
+<span class="k">description:</span> Recipe for comparing matter power spectra
+  of several cosmologies against the eBOSS data
+<span class="c">---</span>
+<span class="c"># Cosmology comparison recipe</span>
+1. Call list_cosmology_models first if unsure ...
+2. Compute the reference model (usually lcdm) FIRST ...</pre>
+      </div>
+      <div class="code" style="margin-top:14px">
+        <div class="fn"><span class="dotc"></span><a href="https://github.com/HEP-KE/multiagent-client-demo/blob/main/agents/skills.py">agents/skills.py</a></div>
+        <button class="copy" type="button">Copy</button>
+<pre><span class="d">@tool</span>
+<span class="k">def</span> load_skill(name: str) -&gt; str:
+    <span class="c">"""Load the full instructions of a named skill."""</span>
+    ...</pre>
+      </div>
+    </div>
+    <div class="aside">
+      <h3>Skill vs tool</h3>
+      <ul class="pts"><li>A tool is a capability. A skill is know-how: <em>how</em> to use the tools well.</li></ul>
+      <h3>Progressive disclosure</h3>
+      <ul class="pts">
+        <li>The lead only sees a name + description index at planning time. The worker loads the full text when a step needs it.</li>
+        <li>Opt-in: <code>build_graph(llm, tools, extras=True)</code>.</li>
+      </ul>
+      <p class="em">Same idea as Claude Code's Agent Skills.</p>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================================== 19 memory -->
+<section class="page" id="backup-memory" data-title="Memory across runs" data-group="Backup">
+  <div class="head"><div class="kicker">Backup</div><h2>Memory: lessons that survive across runs</h2></div>
+  <div class="split">
+    <div class="code" style="margin-top:0">
+      <div class="fn"><span class="dotc"></span><a href="https://github.com/HEP-KE/multiagent-client-demo/blob/main/agents/memory.py">agents/memory.py</a></div>
+      <button class="copy" type="button">Copy</button>
+<pre><span class="d">@tool</span>
+<span class="k">def</span> remember(lesson: str) -&gt; str:
+    <span class="c">"""Save a one-line lesson to persistent memory
+    for future runs. Use this sparingly, when you
+    learn something non-obvious that would help
+    next time."""</span>
+    <span class="k">with</span> MEMORY_FILE.open(<span class="s">"a"</span>) <span class="k">as</span> f:
+        f.write(f<span class="s">"- {lesson.strip()}\n"</span>)</pre>
+    </div>
+    <div class="aside">
+      <h3>MEMORY.md at the repo root</h3>
+      <ul class="pts">
+        <li>Read into the lead's planning prompt at the start of every run.</li>
+        <li>The <code>remember</code> tool lets the agent append a lesson worth keeping.</li>
+      </ul>
+      <p class="em">The smallest possible version of the memory systems in coding agents.</p>
+      <ul class="pts" style="margin-top:12px"><li>In our test runs the agent wrote its own lesson, unprompted.</li></ul>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================================== 20 follow-ups -->
+<section class="page" id="backup-followup" data-title="Follow-ups and backends" data-group="Backup">
+  <div class="head"><div class="kicker">Backup</div><h2>Follow-up runs and switching backends</h2></div>
+  <div class="split">
+    <div>
+      <div class="code" style="margin-top:0">
+        <div class="fn"><span class="dotc"></span><a href="https://github.com/HEP-KE/multiagent-client-demo/blob/main/agents/graph.py">agents/graph.py</a></div>
+        <button class="copy" type="button">Copy</button>
+<pre><span class="k">def</span> follow_up(previous, task):
+    <span class="c">"""A new run that remembers the previous one."""</span>
+    entry = (f<span class="s">"Task: {previous['task']}\n"</span>
+             f<span class="s">"Outcome: {previous['final_report']}"</span>)
+    <span class="k">return</span> {**new_run(task),
+            <span class="s">"history"</span>: previous[<span class="s">"history"</span>] + [entry]}</pre>
+      </div>
+      <div class="code" style="margin-top:14px">
+        <div class="fn"><span class="dotc"></span>Switching backends</div>
+        <button class="copy" type="button">Copy</button>
+<pre>llm = make_llm(<span class="s">"groq"</span>)   <span class="c"># that's the whole switch</span></pre>
+      </div>
+    </div>
+    <div class="aside">
+      <h3>Follow-ups</h3>
+      <ul class="pts"><li>The <code>history</code> field carries summaries of previous runs. “Now add w0=-1.1” reuses yesterday's CSVs instead of recomputing.</li></ul>
+      <h3>Backends</h3>
+      <ul class="pts"><li>No automatic fallback by design. If a key runs dry, you switch explicitly and know you did.</li></ul>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================================== 21 graph diagram -->
+<section class="page" id="backup-graph" data-title="The graph: nodes and edges" data-group="Backup">
+  <div class="head"><div class="kicker">Backup</div><h2>The graph: nodes and edges</h2></div>
+  <figure class="fig">
+    <div class="frame" style="padding:28px 18px">
+      <svg class="dg" viewBox="0 0 780 330" role="img" aria-label="START leads to the lead node. The lead goes to the worker once the plan is written. The worker loops on itself while steps remain, then returns to the lead for the report. The lead goes to END once the final report is written.">
+        <!-- nodes -->
+        <rect x="20" y="104" width="86" height="40" rx="20" class="box"/><text class="t" x="63" y="129" text-anchor="middle">START</text>
+        <rect x="170" y="84" width="180" height="80" rx="10" class="fillA"/>
+        <text class="tw" x="260" y="114" text-anchor="middle" style="font-size:16px">lead</text>
+        <text class="tws" x="260" y="134" text-anchor="middle">plans (first visit)</text>
+        <text class="tws" x="260" y="150" text-anchor="middle">reports (last visit)</text>
+        <rect x="470" y="84" width="180" height="80" rx="10" class="fillD"/>
+        <text class="tw" x="560" y="114" text-anchor="middle" style="font-size:16px">worker</text>
+        <text class="tws" x="560" y="134" text-anchor="middle">runs one plan step</text>
+        <text class="tws" x="560" y="150" text-anchor="middle">calls the MCP tools</text>
+        <rect x="217" y="276" width="86" height="40" rx="20" class="box"/><text class="t" x="260" y="301" text-anchor="middle">END</text>
+        <!-- edges -->
+        <path d="M106 124H166" class="lnA" style="stroke:var(--text-dim)" marker-end="url(#ah)"/>
+        <path d="M330 84C380 36 440 36 490 82" class="ln dash" marker-end="url(#ah)"/>
+        <text class="tm" x="410" y="30" text-anchor="middle">plan written: current &lt; len(plan)</text>
+        <path d="M490 166C440 212 380 212 332 168" class="ln dash" marker-end="url(#ah)"/>
+        <text class="tm" x="410" y="226" text-anchor="middle">every step done: back to lead for the report</text>
+        <path d="M650 104C712 92 712 156 654 146" class="ln dash" marker-end="url(#ah)"/>
+        <text class="tm" x="776" y="52" text-anchor="end">more steps left:</text>
+        <text class="tm" x="776" y="66" text-anchor="end">current &lt; len(plan)</text>
+        <path d="M260 164V272" class="ln dash" marker-end="url(#ah)"/>
+        <text class="tm" x="250" y="236" text-anchor="end">final_report written</text>
+        <!-- legend -->
+        <path d="M400 280H440" class="ln" style="stroke:var(--text-dim)"/><text class="tl" x="450" y="284">fixed edge</text>
+        <path d="M400 304H440" class="ln dash"/><text class="tl" x="450" y="308">conditional edge: plain-Python route function, no LLM</text>
+      </svg>
+    </div>
+    <figcaption>Two LLM nodes, four edges. Every dashed decision is one of the two route functions.</figcaption>
+  </figure>
+</section>
+
+<!-- =============================================================== 22 state mid-run -->
+<section class="page" id="backup-state" data-title="The state mid-run" data-group="Backup">
+  <div class="head"><div class="kicker">Backup</div><h2>The state mid-run: between steps 2 and 3</h2></div>
+  <div class="split">
+    <div class="code" style="margin-top:0">
+      <div class="fn"><span class="dotc"></span>AgentState after the worker finishes step 2 (of 4)</div>
+      <button class="copy" type="button">Copy</button>
+<pre>{
+  <span class="s">"task"</span>: <span class="s">"Compute P(k) at z=0 for three cosmologies ..."</span>,
+  <span class="s">"plan"</span>: [
+    {<span class="s">"id"</span>: 1, <span class="s">"description"</span>: <span class="s">"Compute the LCDM spectrum"</span>},
+    {<span class="s">"id"</span>: 2, <span class="s">"description"</span>: <span class="s">"Compute the 0.10 eV nu_mass spectrum"</span>},
+    {<span class="s">"id"</span>: 3, <span class="s">"description"</span>: <span class="s">"Compute the wCDM (w0=-0.9) spectrum"</span>},
+    {<span class="s">"id"</span>: 4, <span class="s">"description"</span>: <span class="s">"Plot all three vs the eBOSS data"</span>},
+  ],
+  <span class="s">"current"</span>: 2,           <span class="c"># next up: plan[2] -&gt; step 3</span>
+  <span class="s">"step_results"</span>: [
+    <span class="s">"Wrote agent-output/pk_lcdm.csv"</span>,
+    <span class="s">"Wrote agent-output/pk_nu_mass.csv"</span>,
+  ],
+  <span class="s">"final_report"</span>: <span class="s">""</span>,     <span class="c"># still empty</span>
+  <span class="s">"history"</span>: [],          <span class="c"># first run, no follow-up</span>
+}</pre>
+    </div>
+    <div class="aside">
+      <h3>Where are we?</h3>
+      <ul class="pts"><li>The worker just finished <code>plan[1]</code>. <code>route_from_worker</code> sees <code>current</code> (2) &lt; <code>len(plan)</code> (4) and returns “worker”. No LLM involved.</li></ul>
+      <h3>Handoffs are file paths</h3>
+      <ul class="pts">
+        <li><code>step_results</code> carries the CSV paths. The next worker visit gets them as context and reuses them instead of recomputing.</li>
+        <li><code>final_report</code> stays empty until the lead's last visit, after step 4.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+(function () {
+  var body = document.body;
+  var pages = Array.prototype.slice.call(document.querySelectorAll('.page'));
+  var side = document.getElementById('side');
+  var counter = document.getElementById('counter');
+  var progress = document.getElementById('progress');
+  var links = [];
+  var cur = 0;
+
+  function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
+
+  // Sidebar, built from each page's data-title / data-group.
+  var lastGroup = null;
+  pages.forEach(function (p, i) {
+    var g = p.getAttribute('data-group');
+    if (g !== lastGroup) {
+      var h = document.createElement('div'); h.className = 'grp'; h.textContent = g; side.appendChild(h); lastGroup = g;
+    }
+    var a = document.createElement('a');
+    a.href = '#' + p.id;
+    a.innerHTML = '<span class="n">' + String(i + 1).padStart(2, '0') + '</span><span></span>';
+    a.lastChild.textContent = p.getAttribute('data-title');
+    side.appendChild(a); links.push(a);
+  });
+
+  // Prev / next footer on every page.
+  pages.forEach(function (p, i) {
+    var nav = document.createElement('nav'); nav.className = 'pager'; nav.setAttribute('aria-label', 'Page navigation');
+    function card(j, cls, lbl) {
+      var a = document.createElement('a'); a.href = '#' + pages[j].id; a.className = cls;
+      a.innerHTML = '<span class="lbl"></span><span class="ttl"></span>';
+      a.querySelector('.lbl').textContent = lbl; a.querySelector('.ttl').textContent = pages[j].getAttribute('data-title');
+      return a;
+    }
+    if (i > 0) nav.appendChild(card(i - 1, 'pv', '← Previous'));
+    if (i < pages.length - 1) nav.appendChild(card(i + 1, 'nx', 'Next →'));
+    p.appendChild(nav);
+  });
+
+  function isPaged() { return body.classList.contains('paged'); }
+
+  function mark(i) {
+    cur = i;
+    links.forEach(function (a, j) { a.setAttribute('aria-current', j === i ? 'true' : 'false'); });
+    counter.textContent = (i + 1) + ' / ' + pages.length;
+    progress.style.width = ((i + 1) / pages.length * 100) + '%';
+    var l = links[i]; if (l && l.scrollIntoView && isPaged()) l.scrollIntoView({ block: 'nearest' });
+  }
+
+  function show(i, fromHash) {
+    i = Math.max(0, Math.min(pages.length - 1, i));
+    if (isPaged()) {
+      pages.forEach(function (p, j) { p.classList.toggle('on', j === i); });
+      window.scrollTo(0, 0);
+    } else {
+      pages[i].scrollIntoView();
+    }
+    mark(i);
+    if (!fromHash && location.hash !== '#' + pages[i].id) history.replaceState(null, '', '#' + pages[i].id);
+    body.classList.remove('nav-open');
+  }
+
+  function indexFromHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    for (var i = 0; i < pages.length; i++) if (pages[i].id === id) return i;
+    return 0;
+  }
+
+  // Internal anchor clicks: handle ourselves so paged mode swaps pages.
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[href^="#"]');
+    if (!a) return;
+    var id = a.getAttribute('href').slice(1);
+    var idx = pages.findIndex(function (p) { return p.id === id; });
+    if (idx < 0) return;
+    e.preventDefault();
+    history.pushState(null, '', '#' + id);
+    show(idx, true);
+  });
+  window.addEventListener('popstate', function () { show(indexFromHash(), true); });
+  window.addEventListener('hashchange', function () { show(indexFromHash(), true); });
+
+  // Keyboard paging.
+  document.addEventListener('keydown', function (e) {
+    if (!isPaged() || e.metaKey || e.ctrlKey || e.altKey) return;
+    var t = e.target.tagName; if (t === 'INPUT' || t === 'TEXTAREA') return;
+    if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); links[Math.min(cur + 1, pages.length - 1)].click(); }
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); links[Math.max(cur - 1, 0)].click(); }
+  });
+
+  // View toggle: one page at a time, or everything in one scroll.
+  var bP = document.getElementById('v-paged'), bA = document.getElementById('v-all');
+  var io = null;
+  function setMode(m) {
+    body.classList.toggle('paged', m === 'paged');
+    body.classList.toggle('all', m === 'all');
+    bP.setAttribute('aria-pressed', m === 'paged'); bA.setAttribute('aria-pressed', m === 'all');
+    store('sa-view', m);
+    if (io) { io.disconnect(); io = null; }
+    if (m === 'all' && 'IntersectionObserver' in window) {
+      io = new IntersectionObserver(function (es) {
+        es.forEach(function (en) { if (en.isIntersecting) { var i = pages.indexOf(en.target); mark(i); history.replaceState(null, '', '#' + pages[i].id); } });
+      }, { rootMargin: '-45% 0px -50% 0px' });
+      pages.forEach(function (p) { io.observe(p); });
+    }
+    show(cur, true);
+  }
+  bP.addEventListener('click', function () { setMode('paged'); });
+  bA.addEventListener('click', function () { setMode('all'); });
+
+  // Mobile contents drawer.
+  var nt = document.getElementById('nav-toggle');
+  nt.addEventListener('click', function () { var o = body.classList.toggle('nav-open'); nt.setAttribute('aria-expanded', o); });
+
+  // Copy buttons (drop prompt markers and comment-only lines).
+  document.querySelectorAll('.copy').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var pre = b.parentNode.querySelector('pre').cloneNode(true);
+      pre.querySelectorAll('.p').forEach(function (p) { p.remove(); });
+      var shell = !!b.parentNode.querySelector('.p');
+      var txt = pre.textContent;
+      if (shell) txt = txt.split('\n').filter(function (l) { return l.trim().charAt(0) !== '#'; }).join('\n');
+      var done = function () { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy'; }, 1400); };
+      try { navigator.clipboard.writeText(txt).then(done, function () {}); } catch (e) {}
+    });
+  });
+
+  // Click-to-enlarge figures.
+  document.querySelectorAll('img.zoom').forEach(function (img) {
+    img.addEventListener('click', function () {
+      var lb = document.createElement('div'); lb.className = 'lightbox';
+      var c = img.cloneNode(); c.className = ''; lb.appendChild(c);
+      if (img.naturalWidth < 1600) c.style.width = 'min(' + img.naturalWidth + 'px, 94vw)';
+      lb.addEventListener('click', function () { lb.remove(); });
+      document.addEventListener('keydown', function esc(e) { if (e.key === 'Escape') { lb.remove(); document.removeEventListener('keydown', esc); } });
+      body.appendChild(lb);
+    });
+  });
+
+  cur = indexFromHash();
+  setMode(store('sa-view') === 'all' ? 'all' : 'paged');
+})();
+</script>
+</body>
+</html>
