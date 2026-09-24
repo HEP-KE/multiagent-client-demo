@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="dg lg" viewBox="0 0 560 480">
+          <!-- row 1 -->
+          <text class="t" x="10" y="22">1. Custom pre-trained LLM</text>
+          <circle cx="28" cy="62" r="16" class="box2"/><circle cx="28" cy="57" r="4" class="ahA"/><path d="M20 70q8-9 16 0" class="lnA"/>
+          <path d="M48 62H146" class="ln" marker-end="url(#ah)"/><text class="tl" x="72" y="54">Query</text>
+          <rect x="150" y="42" width="260" height="40" rx="8" class="fillA"/><text class="tw" x="280" y="67" text-anchor="middle">Pre-trained LLM</text>
+          <path d="M410 62H508" class="ln" marker-end="url(#ah)"/><text class="tl" x="424" y="54">Response</text>
+          <circle cx="530" cy="62" r="16" class="box2"/><text class="tm" x="530" y="65" text-anchor="middle">···</text>
+          <text class="tl" x="280" y="102" text-anchor="middle">Single model trained for general purpose use</text>
+          <!-- row 2 -->
+          <text class="t" x="10" y="146">2. Fine-tuned LLM</text>
+          <circle cx="28" cy="188" r="16" class="box2"/><circle cx="28" cy="183" r="4" class="ahA"/><path d="M20 196q8-9 16 0" class="lnA"/>
+          <path d="M48 188H146" class="ln" marker-end="url(#ah)"/><text class="tl" x="72" y="180">Query</text>
+          <rect x="150" y="166" width="260" height="22" rx="6" class="fillD"/><text class="tws" x="280" y="181" text-anchor="middle">Base LLM</text>
+          <rect x="150" y="190" width="260" height="22" rx="6" class="fillA"/><text class="tws" x="280" y="205" text-anchor="middle">Fine-tuning layer</text>
+          <path d="M410 188H508" class="ln" marker-end="url(#ah)"/><text class="tl" x="424" y="180">Response</text>
+          <circle cx="530" cy="188" r="16" class="box2"/><text class="tm" x="530" y="191" text-anchor="middle">···</text>
+          <text class="tl" x="280" y="232" text-anchor="middle">Base model with additional domain-specific training</text>
+          <!-- row 3 -->
+          <text class="t" x="10" y="276">3. Agentic system</text>
+          <circle cx="28" cy="316" r="16" class="box2"/><circle cx="28" cy="311" r="4" class="ahA"/><path d="M20 324q8-9 16 0" class="lnA"/>
+          <path d="M48 316H146" class="ln" marker-end="url(#ah)"/><text class="tl" x="72" y="308">Query</text>
+          <rect x="150" y="296" width="260" height="40" rx="8" class="fillA"/><text class="tw" x="280" y="321" text-anchor="middle">Orchestrator / Router LLM</text>
+          <path d="M410 316H508" class="ln" marker-end="url(#ah)"/><text class="tl" x="424" y="308">Response</text>
+          <circle cx="530" cy="316" r="16" class="box2"/><text class="tm" x="530" y="319" text-anchor="middle">···</text>
+          <path d="M200 338V366M280 338V366M360 338V366" class="ln" marker-start="url(#ah)" marker-end="url(#ah)"/>
+          <rect x="162" y="368" width="76" height="30" rx="6" class="fillD"/><text class="tws" x="200" y="387" text-anchor="middle">Specialist 1</text>
+          <rect x="242" y="368" width="76" height="30" rx="6" class="fillD"/><text class="tws" x="280" y="387" text-anchor="middle">Specialist 2</text>
+          <rect x="322" y="368" width="76" height="30" rx="6" class="fillD"/><text class="tws" x="360" y="387" text-anchor="middle">Specialist 3</text>
+          <path d="M200 398V428H244M280 398V414M360 398V428H316" class="ln dash" marker-end="url(#ah)"/>
+          <rect x="246" y="416" width="68" height="26" rx="6" class="box"/><text class="tl" x="280" y="433" text-anchor="middle">Tools</text>
+          <text class="tl" x="280" y="468" text-anchor="middle">Multiple specialized models working in coordination</text>
+        </svg>

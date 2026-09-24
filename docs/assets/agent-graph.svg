@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="dg" viewBox="0 0 780 330">
+        <!-- nodes -->
+        <rect x="20" y="104" width="86" height="40" rx="20" class="box"/><text class="t" x="63" y="129" text-anchor="middle">START</text>
+        <rect x="170" y="84" width="180" height="80" rx="10" class="fillA"/>
+        <text class="tw" x="260" y="114" text-anchor="middle" style="font-size:16px">lead</text>
+        <text class="tws" x="260" y="134" text-anchor="middle">plans (first visit)</text>
+        <text class="tws" x="260" y="150" text-anchor="middle">reports (last visit)</text>
+        <rect x="470" y="84" width="180" height="80" rx="10" class="fillD"/>
+        <text class="tw" x="560" y="114" text-anchor="middle" style="font-size:16px">worker</text>
+        <text class="tws" x="560" y="134" text-anchor="middle">runs one plan step</text>
+        <text class="tws" x="560" y="150" text-anchor="middle">calls the MCP tools</text>
+        <rect x="217" y="276" width="86" height="40" rx="20" class="box"/><text class="t" x="260" y="301" text-anchor="middle">END</text>
+        <!-- edges -->
+        <path d="M106 124H166" class="lnA" style="stroke:var(--text-dim)" marker-end="url(#ah)"/>
+        <path d="M330 84C380 36 440 36 490 82" class="ln dash" marker-end="url(#ah)"/>
+        <text class="tm" x="410" y="30" text-anchor="middle">plan written: current &lt; len(plan)</text>
+        <path d="M490 166C440 212 380 212 332 168" class="ln dash" marker-end="url(#ah)"/>
+        <text class="tm" x="410" y="226" text-anchor="middle">every step done: back to lead for the report</text>
+        <path d="M650 104C712 92 712 156 654 146" class="ln dash" marker-end="url(#ah)"/>
+        <text class="tm" x="776" y="52" text-anchor="end">more steps left:</text>
+        <text class="tm" x="776" y="66" text-anchor="end">current &lt; len(plan)</text>
+        <path d="M260 164V272" class="ln dash" marker-end="url(#ah)"/>
+        <text class="tm" x="250" y="236" text-anchor="end">final_report written</text>
+        <!-- legend -->
+        <path d="M400 280H440" class="ln" style="stroke:var(--text-dim)"/><text class="tl" x="450" y="284">fixed edge</text>
+        <path d="M400 304H440" class="ln dash"/><text class="tl" x="450" y="308">conditional edge: plain-Python route function, no LLM</text>
+      </svg>

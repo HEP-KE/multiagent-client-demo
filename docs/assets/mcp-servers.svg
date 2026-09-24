@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="dg" viewBox="0 0 640 420">
+          <text class="th" x="320" y="22" text-anchor="middle">One client, many servers</text>
+          <!-- client -->
+          <rect x="8" y="160" width="150" height="104" rx="10" class="contd" style="stroke-dasharray:none"/>
+          <text class="tm" x="20" y="180">CLIENT LAYER</text>
+          <rect x="20" y="190" width="126" height="60" rx="8" class="box2"/>
+          <text class="t" x="83" y="215" text-anchor="middle">HEP-KE MultiAgent</text>
+          <text class="tl" x="83" y="235" text-anchor="middle">(any compatible client)</text>
+          <!-- servers container -->
+          <rect x="228" y="40" width="200" height="370" rx="12" class="cont"/>
+          <text class="tm" x="244" y="60">MCP SERVERS</text>
+          <rect x="244" y="72" width="168" height="64" rx="8" class="box"/>
+          <text class="t" x="328" y="100" text-anchor="middle">Microlensing</text><text class="tl" x="328" y="118" text-anchor="middle">MCP server</text>
+          <rect x="244" y="152" width="168" height="64" rx="8" class="box"/>
+          <text class="t" x="328" y="180" text-anchor="middle">LyAlpha-MCP</text><text class="tl" x="328" y="198" text-anchor="middle">statistics server</text>
+          <rect x="244" y="232" width="168" height="64" rx="8" class="box"/>
+          <text class="t" x="328" y="260" text-anchor="middle">Knowledge base</text><text class="tl" x="328" y="278" text-anchor="middle">MCP server</text>
+          <rect x="244" y="318" width="168" height="64" rx="8" class="box" style="stroke-dasharray:5 4;fill:transparent"/>
+          <text class="t" x="328" y="346" text-anchor="middle">Other</text><text class="tl" x="328" y="364" text-anchor="middle">MCP server</text>
+          <!-- client arrows -->
+          <path d="M158 196C190 150 205 110 241 104" class="lnA" marker-end="url(#ahA)"/>
+          <path d="M158 206C195 195 210 186 241 184" class="lnA" marker-end="url(#ahA)"/>
+          <path d="M158 226C195 236 210 262 241 264" class="lnA" marker-end="url(#ahA)"/>
+          <path d="M158 244C190 290 205 346 241 350" class="lnA dash" marker-end="url(#ahA)"/>
+          <text class="tm" x="164" y="142">MCP</text>
+          <!-- infra -->
+          <rect x="478" y="110" width="154" height="236" rx="12" class="contd"/>
+          <text class="tm" x="490" y="130">GENESIS INFRA</text>
+          <rect x="490" y="146" width="130" height="40" rx="20" class="box2"/><text class="tl" x="555" y="171" text-anchor="middle">Compute libraries</text>
+          <rect x="490" y="212" width="130" height="46" rx="23" class="box2"/><text class="tl" x="555" y="231" text-anchor="middle">Data APIs</text><text class="tl" x="555" y="247" text-anchor="middle">(arXiv, etc.)</text>
+          <rect x="490" y="284" width="130" height="40" rx="20" class="box2"/><text class="tl" x="555" y="309" text-anchor="middle">AmSC LLM APIs</text>
+          <path d="M412 112C450 118 460 150 487 160" class="ln dash" marker-end="url(#ah)"/>
+          <path d="M412 184C450 180 460 172 487 168" class="ln dash" marker-end="url(#ah)"/>
+          <path d="M412 256C450 250 460 238 487 236" class="ln dash" marker-end="url(#ah)"/>
+          <path d="M412 272C450 280 460 298 487 300" class="ln dash" marker-end="url(#ah)"/>
+          <path d="M412 350C450 346 462 318 487 310" class="ln dash" marker-end="url(#ah)"/>
+          <text class="tm" x="424" y="222" style="fill:var(--text-faint)">require</text>
+        </svg>
