@@ -219,6 +219,10 @@ figure.fig.wide img { min-width: 900px; }
 .dg .dash { stroke-dasharray: 5 4; }
 .dg .ah { fill: var(--text-faint); }
 .dg .ahA { fill: var(--accent); }
+.dg .dim { opacity: .2; filter: grayscale(1); }
+[data-part="graph"].focus .ln { stroke: var(--accent); stroke-width: 1.8; }
+.dg .focus .contd { stroke: var(--accent); }
+figure.fig.svgfig { max-width: 900px; margin-inline: auto; }
 
 /* ---------------------------------------------------------------- pager */
 .pager { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--line-soft); }
@@ -405,12 +409,19 @@ figure.fig.wide img { min-width: 900px; }
       var cap = img.getAttribute('title');
       if (cap) { var fc = document.createElement('figcaption'); fc.innerHTML = inline(cap); fig.appendChild(fc); img.removeAttribute('title'); }
       var src = img.getAttribute('src');
-      if (/\.svg$/i.test(src)) {
-        var alt = img.getAttribute('alt') || '';
-        fetch(src).then(function (r) { if (!r.ok) throw 0; return r.text(); }).then(function (t) {
+      var svgm = src.match(/^(.*\.svg)(?:#([\w,-]+))?$/i);
+      if (svgm) {
+        // "diagram.svg#part1,part2" highlights those data-part groups and dims the rest.
+        var alt = img.getAttribute('alt') || '', focus = svgm[2] ? svgm[2].split(',') : null;
+        fig.classList.add('svgfig');
+        fetch(svgm[1]).then(function (r) { if (!r.ok) throw 0; return r.text(); }).then(function (t) {
           frame.innerHTML = t; var svg = frame.querySelector('svg');
-          if (svg) { svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', alt); }
-        }).catch(function () { frame.appendChild(img); });
+          if (!svg) return;
+          svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', alt);
+          if (focus) svg.querySelectorAll('[data-part]').forEach(function (g) {
+            g.classList.add(focus.indexOf(g.getAttribute('data-part')) >= 0 ? 'focus' : 'dim');
+          });
+        }).catch(function () { img.setAttribute('src', svgm[1]); frame.appendChild(img); });
       } else {
         img.classList.add('zoom'); frame.appendChild(img);
         var wide = function () { if (img.naturalWidth / img.naturalHeight > 3) fig.classList.add('wide'); };

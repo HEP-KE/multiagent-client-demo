@@ -66,7 +66,7 @@ Normal **Markdown** here: paragraphs, lists, links, `code`, tables.
 - **Add:** copy an existing page (from its `+++` block to just before the next `+++`), paste it where you want it, and give it a new `id`.
 - **Remove:** delete the block, or set `hidden: yes`.
 - **Reorder:** cut and paste blocks. Page numbers, the sidebar, and Next/Previous update themselves.
-- **Link to another page:** `[see the graph](#backup-graph)`.
+- **Link to another page:** `[see the graph](#client-graph)`.
 
 ## Markdown features
 
@@ -113,6 +113,17 @@ Languages: `python`, `bash`, `console`, `json`, `yaml`, `toml`, `markdown`,
 Put the file in `assets/`. An image on its own line becomes a framed figure.
 Photos and plots can be clicked to enlarge. Very wide images scroll sideways on
 phones. SVG files are drawn inline so they pick up the site's fonts and colours.
+
+**Highlighting part of a diagram.** An SVG can mark groups with
+`<g data-part="name">`. Add `#name` after the file name to show that part at
+full strength and fade the rest. Several parts are comma-separated.
+
+```markdown
+![Agent graph](assets/agent-graph.svg#state "State: one shared dict.")
+```
+
+`assets/agent-graph.svg` has three parts: `graph`, `nodes`, and `state`. Leave
+off the `#…` to show the whole diagram.
 
 ## Layout blocks
 

@@ -1,27 +1,86 @@
-<svg xmlns="http://www.w3.org/2000/svg" class="dg" viewBox="0 0 780 330">
-        <!-- nodes -->
-        <rect x="20" y="104" width="86" height="40" rx="20" class="box"/><text class="t" x="63" y="129" text-anchor="middle">START</text>
-        <rect x="170" y="84" width="180" height="80" rx="10" class="fillA"/>
-        <text class="tw" x="260" y="114" text-anchor="middle" style="font-size:16px">lead</text>
-        <text class="tws" x="260" y="134" text-anchor="middle">plans (first visit)</text>
-        <text class="tws" x="260" y="150" text-anchor="middle">reports (last visit)</text>
-        <rect x="470" y="84" width="180" height="80" rx="10" class="fillD"/>
-        <text class="tw" x="560" y="114" text-anchor="middle" style="font-size:16px">worker</text>
-        <text class="tws" x="560" y="134" text-anchor="middle">runs one plan step</text>
-        <text class="tws" x="560" y="150" text-anchor="middle">calls the MCP tools</text>
-        <rect x="217" y="276" width="86" height="40" rx="20" class="box"/><text class="t" x="260" y="301" text-anchor="middle">END</text>
-        <!-- edges -->
-        <path d="M106 124H166" class="lnA" style="stroke:var(--text-dim)" marker-end="url(#ah)"/>
-        <path d="M330 84C380 36 440 36 490 82" class="ln dash" marker-end="url(#ah)"/>
-        <text class="tm" x="410" y="30" text-anchor="middle">plan written: current &lt; len(plan)</text>
-        <path d="M490 166C440 212 380 212 332 168" class="ln dash" marker-end="url(#ah)"/>
-        <text class="tm" x="410" y="226" text-anchor="middle">every step done: back to lead for the report</text>
-        <path d="M650 104C712 92 712 156 654 146" class="ln dash" marker-end="url(#ah)"/>
-        <text class="tm" x="776" y="52" text-anchor="end">more steps left:</text>
-        <text class="tm" x="776" y="66" text-anchor="end">current &lt; len(plan)</text>
-        <path d="M260 164V272" class="ln dash" marker-end="url(#ah)"/>
-        <text class="tm" x="250" y="236" text-anchor="end">final_report written</text>
-        <!-- legend -->
-        <path d="M400 280H440" class="ln" style="stroke:var(--text-dim)"/><text class="tl" x="450" y="284">fixed edge</text>
-        <path d="M400 304H440" class="ln dash"/><text class="tl" x="450" y="308">conditional edge: plain-Python route function, no LLM</text>
-      </svg>
+<svg xmlns="http://www.w3.org/2000/svg" class="dg" viewBox="0 0 860 462">
+  <!--
+    Parts can be highlighted per page: ![..](assets/agent-graph.svg#nodes "caption")
+    data-part values: graph (container, START/END, edges, route functions), nodes, state
+  -->
+
+  <!-- ============================================================ GRAPH -->
+  <g data-part="graph">
+    <rect x="10" y="10" width="705" height="302" rx="14" class="contd"/>
+    <text class="tm" x="26" y="32">GRAPH · StateGraph(AgentState) · agents/graph.py</text>
+
+    <rect x="26" y="121" width="80" height="34" rx="17" class="box"/>
+    <text class="t" x="66" y="143" text-anchor="middle">START</text>
+    <path d="M106 138H146" class="ln" style="stroke:var(--text-dim)" marker-end="url(#ah)"/>
+
+    <rect x="192" y="262" width="86" height="34" rx="17" class="box"/>
+    <text class="t" x="235" y="284" text-anchor="middle">END</text>
+
+    <!-- lead -> worker -->
+    <path d="M300 97C350 56 420 56 468 95" class="ln dash" marker-end="url(#ah)"/>
+    <text class="tm" x="385" y="52" text-anchor="middle">route_from_lead: plan written</text>
+    <!-- worker -> lead -->
+    <path d="M468 181C420 222 350 222 304 183" class="ln dash" marker-end="url(#ah)"/>
+    <text class="tm" x="386" y="238" text-anchor="middle">route_from_worker: all steps done</text>
+    <!-- worker -> worker -->
+    <path d="M598 97C606 50 672 56 620 116" class="ln dash" marker-end="url(#ah)"/>
+    <text class="tm" x="704" y="44" text-anchor="end">route_from_worker: steps left</text>
+    <!-- lead -> END -->
+    <path d="M235 180V258" class="ln dash" marker-end="url(#ah)"/>
+    <text class="tm" x="226" y="222" text-anchor="end">route_from_lead:</text>
+    <text class="tm" x="226" y="236" text-anchor="end">report written</text>
+  </g>
+
+  <!-- ============================================================ NODES -->
+  <g data-part="nodes">
+    
+    <rect x="150" y="98" width="170" height="80" rx="10" class="fillA"/>
+    <text class="tm" x="235" y="116" text-anchor="middle" style="fill:rgba(255,255,255,.7);font-size:10px">NODE · LLM</text>
+    <text class="tw" x="235" y="136" text-anchor="middle" style="font-size:16px">lead</text>
+    <text class="tws" x="235" y="154" text-anchor="middle">plans (first visit)</text>
+    <text class="tws" x="235" y="169" text-anchor="middle">reports (last visit)</text>
+
+    
+    <rect x="448" y="98" width="170" height="80" rx="10" class="fillD"/>
+    <text class="tm" x="533" y="116" text-anchor="middle" style="fill:rgba(255,255,255,.7);font-size:10px">NODE · LLM + TOOLS</text>
+    <text class="tw" x="533" y="136" text-anchor="middle" style="font-size:16px">worker</text>
+    <text class="tws" x="533" y="154" text-anchor="middle">runs one plan step</text>
+    <text class="tws" x="533" y="169" text-anchor="middle">ReAct loop over tools</text>
+
+    <path d="M620 150H736" class="lnA" marker-start="url(#ahA)" marker-end="url(#ahA)"/>
+    <text class="tm" x="678" y="142" text-anchor="middle">MCP</text>
+    <rect x="740" y="118" width="110" height="64" rx="10" class="box2"/>
+    <text class="t" x="795" y="145" text-anchor="middle">MCP tools</text>
+    <text class="tl" x="795" y="164" text-anchor="middle">spectra server</text>
+  </g>
+
+  <!-- ============================================================ STATE -->
+  <g data-part="state">
+    <path d="M178 180V336" class="lnA dash" marker-start="url(#ahA)" marker-end="url(#ahA)"/>
+    <path d="M500 180V336" class="lnA dash" marker-start="url(#ahA)" marker-end="url(#ahA)"/>
+    <text class="tm" x="508" y="330">state in · partial update out</text>
+
+    <rect x="10" y="340" width="840" height="112" rx="14" class="box2" style="fill:var(--accent-soft)"/>
+    <text class="tm" x="26" y="362">STATE · AgentState (agents/state.py) · one shared dict, passed to every node</text>
+
+    <rect x="26"  y="374" width="128" height="30" rx="6" class="box2"/><text class="t" x="90"  y="394" text-anchor="middle">task</text>
+    <rect x="164" y="374" width="128" height="30" rx="6" class="box2"/><text class="t" x="228" y="394" text-anchor="middle">plan</text>
+    <rect x="302" y="374" width="128" height="30" rx="6" class="box2"/><text class="t" x="366" y="394" text-anchor="middle">current</text>
+    <rect x="440" y="374" width="128" height="30" rx="6" class="box2"/><text class="t" x="504" y="394" text-anchor="middle">step_results</text>
+    <rect x="578" y="374" width="128" height="30" rx="6" class="box2"/><text class="t" x="642" y="394" text-anchor="middle">final_report</text>
+    <rect x="716" y="374" width="128" height="30" rx="6" class="box2"/><text class="t" x="780" y="394" text-anchor="middle">history</text>
+
+    <text class="tl" x="90"  y="424" text-anchor="middle">the science question</text>
+    <text class="tl" x="228" y="424" text-anchor="middle">lead, first visit</text>
+    <text class="tl" x="366" y="424" text-anchor="middle">index of next step</text>
+    <text class="tl" x="504" y="424" text-anchor="middle">worker, one per step</text>
+    <text class="tl" x="642" y="424" text-anchor="middle">lead, last visit</text>
+    <text class="tl" x="780" y="424" text-anchor="middle">previous runs</text>
+    <text class="tl" x="90"  y="440" text-anchor="middle" style="fill:var(--text-faint)">set by you</text>
+    <text class="tl" x="228" y="440" text-anchor="middle" style="fill:var(--text-faint)">list of steps</text>
+    <text class="tl" x="366" y="440" text-anchor="middle" style="fill:var(--text-faint)">read by routing</text>
+    <text class="tl" x="504" y="440" text-anchor="middle" style="fill:var(--text-faint)">CSV paths</text>
+    <text class="tl" x="642" y="440" text-anchor="middle" style="fill:var(--text-faint)">markdown report</text>
+    <text class="tl" x="780" y="440" text-anchor="middle" style="fill:var(--text-faint)">for follow-ups</text>
+  </g>
+</svg>

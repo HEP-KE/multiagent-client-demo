@@ -410,6 +410,8 @@ group: Client
 kicker: Client · multiagent-client-demo
 +++
 
+![The agent graph. Inside the graph: START, a lead node and a worker node, END, and dashed edges chosen by two route functions. The worker calls MCP tools. Below, the shared AgentState with its six fields; both nodes read it and return partial updates.](assets/agent-graph.svg#nodes "**Nodes:** two LLM roles. Only the worker calls the MCP tools.")
+
 ::: split right
 #### Lead · visited twice
 
@@ -444,6 +446,8 @@ group: Client
 kicker: Client · multiagent-client-demo
 +++
 
+![The agent graph. Inside the graph: START, a lead node and a worker node, END, and dashed edges chosen by two route functions. The worker calls MCP tools. Below, the shared AgentState with its six fields; both nodes read it and return partial updates.](assets/agent-graph.svg#graph,nodes "**Graph:** nodes plus edges. Every dashed edge is chosen by one of two plain-Python route functions.")
+
 ::: split
 ```python title="agents/graph.py" link="https://github.com/HEP-KE/multiagent-client-demo/blob/main/agents/graph.py"
 def route_from_worker(state):
@@ -464,13 +468,11 @@ return graph.compile()
 |||
 #### The flow
 
-`START → lead (plan) → worker → worker → … → lead (report) → END`
+START → lead (plan) → worker → worker → … → lead (report) → END
 
 #### The “supervisor” is deterministic
 
 - Two if-statements route the whole system. Not every agent in a multi-agent system needs to be an LLM call.
-
-*The [graph diagram](#backup-graph) is in the backup pages.*
 :::
 
 
@@ -480,6 +482,8 @@ title: State: what flows through the graph
 group: Client
 kicker: Client · multiagent-client-demo
 +++
+
+![The agent graph. Inside the graph: START, a lead node and a worker node, END, and dashed edges chosen by two route functions. The worker calls MCP tools. Below, the shared AgentState with its six fields; both nodes read it and return partial updates.](assets/agent-graph.svg#state "**State:** one shared dict. Every node receives it and returns a partial update.")
 
 ::: split
 ```python title="agents/state.py" link="https://github.com/HEP-KE/multiagent-client-demo/blob/main/agents/state.py"
@@ -648,16 +652,6 @@ llm = make_llm("groq")   # that's the whole switch
 
 - No automatic fallback by design. If a key runs dry, you switch explicitly and know you did.
 :::
-
-
-+++
-id: backup-graph
-title: The graph: nodes and edges
-group: Backup
-kicker: Backup
-+++
-
-![START leads to lead; lead goes to worker once the plan is written; worker loops while steps remain, then returns to lead; lead goes to END once the report is written.](assets/agent-graph.svg "Two LLM nodes, four edges. Every dashed decision is one of the two route functions.")
 
 
 +++
